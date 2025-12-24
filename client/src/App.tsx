@@ -7,8 +7,8 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import Login from './features/auth/Login';
-import Signup from './features/auth/Signup';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 
 const App = () => {
   return (
@@ -22,8 +22,8 @@ const App = () => {
           <Route path="checkout" element={<CheckoutPage />} />
           <Route path="orders" element={<OrderHistoryPage />} />
           <Route path="admin/orders" element={<AdminDashboard />} />
-          <Route path="login" element={<Login />} />
-          <Route path="signup" element={<Signup />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="signup" element={<SignupPage />} />
           <Route path="*" element={<div className="text-center text-xl text-red-500">404 Not Found</div>} />
         </Route>
       </Routes>

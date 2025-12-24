@@ -5,6 +5,7 @@ import type { RootState } from '../store';
 import { logout } from '../features/auth/authSlice';
 import { useGetCartQuery } from '../features/cart/cartApi';
 import { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 const MainLayout = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -197,6 +198,12 @@ const MainLayout = () => {
           </div>
         </div>
       </footer>
+      <Toaster position="bottom-right" toastOptions={{
+        style: {
+          background: '#333',
+          color: '#fff',
+        },
+      }} />
     </div>
   );
 };

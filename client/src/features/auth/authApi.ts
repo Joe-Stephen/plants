@@ -18,7 +18,7 @@ export const authApi = api.injectEndpoints({
         }
       },
     }),
-    signup: builder.mutation({
+    register: builder.mutation({
       query: (userData) => ({
         url: '/auth/signup',
         method: 'POST',
@@ -36,4 +36,4 @@ export const authApi = api.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation, useSignupMutation } = authApi;
+export const { useLoginMutation, useRegisterMutation } = authApi;

@@ -3,11 +3,19 @@ import { useParams, Link } from 'react-router-dom';
 import { useGetProductByIdQuery } from '../features/products/productApi';
 import { Loader2, Minus, Plus, ShoppingCart, Star, Truck, Shield } from 'lucide-react';
 
+import { useAddToCartMutation } from '../features/cart/cartApi';
+import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store';
+
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, error } = useGetProductByIdQuery(Number(id));
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  
+  const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
+  const { user } = useSelector((state: RootState) => state.auth);
 
   if (isLoading) {
     return (
@@ -33,6 +41,21 @@ const ProductDetailPage = () => {
 
   const handleDecrement = () => setQuantity(q => Math.max(1, q - 1));
   const handleIncrement = () => setQuantity(q => Math.min(product.stock, q + 1));
+  
+  const handleAddToCart = async () => {
+    if (!user) {
+      toast.error('Please login to add items to cart');
+      return;
+    }
+    
+    try {
+      await addToCart({ productId: product.id, quantity }).unwrap();
+      toast.success('Added to cart!');
+    } catch (err: any) {
+      toast.error('Failed to add to cart');
+      console.error(err);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -130,11 +153,12 @@ const ProductDetailPage = () => {
 
           <div className="flex gap-4">
             <button 
+              onClick={handleAddToCart}
+              disabled={isAdding || product.stock === 0}
               className="flex-1 bg-primary-600 text-white rounded-2xl py-4 flex items-center justify-center space-x-2 font-bold text-lg hover:bg-primary-700 transition-all shadow-lg hover:shadow-primary-600/30 transform hover:-translate-y-1 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
-              disabled={product.stock === 0}
             >
-              <ShoppingCart size={24} />
-              <span>Add to Cart</span>
+              {isAdding ? <Loader2 className="animate-spin" /> : <ShoppingCart size={24} />}
+              <span>{isAdding ? 'Adding...' : 'Add to Cart'}</span>
             </button>
           </div>
 
