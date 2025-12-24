@@ -33,7 +33,22 @@ export const authApi = api.injectEndpoints({
         }
       },
     }),
+    getMe: builder.query({
+      query: () => '/auth/me',
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          const token = localStorage.getItem('token');
+          if (token) {
+             dispatch(setCredentials({ user: data.user, token }));
+          }
+        } catch (err) {
+          // Handle error or clear token if invalid
+          localStorage.removeItem('token');
+        }
+      },
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation } = authApi;
+export const { useLoginMutation, useRegisterMutation, useGetMeQuery } = authApi;

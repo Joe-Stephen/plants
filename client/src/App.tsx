@@ -10,7 +10,12 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 
+import { useGetMeQuery } from './features/auth/authApi';
+
 const App = () => {
+  const token = localStorage.getItem('token');
+  useGetMeQuery(undefined, { skip: !token });
+
   return (
     <BrowserRouter>
       <Routes>

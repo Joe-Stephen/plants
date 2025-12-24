@@ -34,3 +34,19 @@ export const login = async (
     next(error);
   }
 };
+
+export const getMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const user = req.user;
+    res.status(200).json({
+      status: 'success',
+      data: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -7,5 +7,6 @@ const router = Router();
 
 router.post('/signup', validate(signupSchema), authController.signup);
 router.post('/login', validate(loginSchema), authController.login);
+router.get('/me', require('../middlewares/auth.middleware').authenticate, authController.getMe);
 
 export default router;
