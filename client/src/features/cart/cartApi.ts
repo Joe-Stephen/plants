@@ -18,37 +18,47 @@ export const cartApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getCart: builder.query<{ cart: Cart }, void>({
       query: () => '/cart',
+      transformResponse: (response: { data: { cart: Cart } }) => response.data,
       providesTags: ['Cart'],
     }),
-    addToCart: builder.mutation<void, { productId: number; quantity: number }>({
+    addToCart: builder.mutation<
+      { cart: Cart },
+      { productId: number; quantity: number }
+    >({
       query: (body) => ({
         url: '/cart',
         method: 'POST',
         body,
       }),
+      transformResponse: (response: { data: { cart: Cart } }) => response.data,
       invalidatesTags: ['Cart'],
     }),
-    updateCartItem: builder.mutation<void, { id: number; quantity: number }>({
+    updateCartItem: builder.mutation<
+      { cart: Cart },
+      { id: number; quantity: number }
+    >({
       query: ({ id, quantity }) => ({
-        url: `/cart/${id}`,
+        url: `/cart/items/${id}`,
         method: 'PUT',
         body: { quantity },
       }),
+      transformResponse: (response: { data: { cart: Cart } }) => response.data,
       invalidatesTags: ['Cart'],
     }),
-    removeFromCart: builder.mutation<void, number>({
+    removeFromCart: builder.mutation<{ cart: Cart }, number>({
       query: (id) => ({
-        url: `/cart/${id}`,
+        url: `/cart/items/${id}`,
         method: 'DELETE',
       }),
+      transformResponse: (response: { data: { cart: Cart } }) => response.data,
       invalidatesTags: ['Cart'],
     }),
   }),
 });
 
-export const { 
-  useGetCartQuery, 
-  useAddToCartMutation, 
-  useUpdateCartItemMutation, 
-  useRemoveFromCartMutation 
+export const {
+  useGetCartQuery,
+  useAddToCartMutation,
+  useUpdateCartItemMutation,
+  useRemoveFromCartMutation,
 } = cartApi;
