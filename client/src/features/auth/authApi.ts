@@ -12,7 +12,7 @@ export const authApi = api.injectEndpoints({
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setCredentials({ user: data.user, token: data.token }));
+          dispatch(setCredentials({ user: data.data.user, token: data.token }));
         } catch (err) {
           // Handle error
         }
@@ -27,7 +27,7 @@ export const authApi = api.injectEndpoints({
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setCredentials({ user: data.user, token: data.token }));
+          dispatch(setCredentials({ user: data.data.user, token: data.token }));
         } catch (err) {
           // Handle error
         }
@@ -40,7 +40,7 @@ export const authApi = api.injectEndpoints({
           const { data } = await queryFulfilled;
           const token = localStorage.getItem('token');
           if (token) {
-             dispatch(setCredentials({ user: data.user, token }));
+            dispatch(setCredentials({ user: data.data.user, token }));
           }
         } catch (err) {
           // Handle error or clear token if invalid

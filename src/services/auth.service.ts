@@ -5,7 +5,8 @@ import { AppError } from '../utils/AppError';
 
 const signToken = (id: number) => {
   return jwt.sign({ id }, (process.env.JWT_SECRET || 'secret') as string, {
-    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as jwt.SignOptions['expiresIn'],
+    expiresIn: (process.env.JWT_EXPIRES_IN ||
+      '1d') as jwt.SignOptions['expiresIn'],
   });
 };
 
@@ -13,7 +14,7 @@ export const signup = async (data: any) => {
   const existingUser = await models.User.findOne({
     where: { email: data.email },
   });
-
+  console.log('existingUser :', existingUser);
   if (existingUser) {
     throw new AppError('Email already in use', 400);
   }
