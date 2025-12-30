@@ -144,6 +144,25 @@ export const verifyPayment = async (
     }
 
     await transaction.commit();
+
+    // Analytics Hook - Fire and forget (don't block response)
+    try {
+      const { incrementStats } = require('./analytics.service');
+      const totalItems = orderItems.reduce(
+        (sum: number, item: any) => sum + item.quantity,
+        0,
+      );
+      const today = new Date().toISOString().split('T')[0];
+
+      incrementStats(today, Number(order.total), totalItems, false).catch(
+        (err: any) => {
+          console.error('Failed to update analytics cache:', err);
+        },
+      );
+    } catch (e) {
+      console.error('Error in analytics hook:', e);
+    }
+
     return order;
   } catch (error) {
     await transaction.rollback();

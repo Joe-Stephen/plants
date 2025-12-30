@@ -1,0 +1,48 @@
+2025-12-30T12:28:02.186Z - Auth Error: jwt malformed
+Stack: JsonWebTokenError: jwt malformed
+    at Object.module.exports [as verify] (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/jsonwebtoken/verify.js:70:17)
+    at authenticate (/home/joe/Desktop/Joe Stephen/Projects/plants/src/middlewares/auth.middleware.ts:29:30)
+    at Layer.handleRequest (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:342:13)
+    at /home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:297:9
+    at processParams (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:582:12)
+    at next (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:291:5)
+    at Function.handle (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:186:3)
+    at router (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:60:12)
+    at Layer.handleRequest (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/lib/layer.js:152:17)
+2025-12-30T12:28:22.347Z - Auth Error: jwt malformed
+Stack: JsonWebTokenError: jwt malformed
+    at Object.module.exports [as verify] (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/jsonwebtoken/verify.js:70:17)
+    at authenticate (/home/joe/Desktop/Joe Stephen/Projects/plants/src/middlewares/auth.middleware.ts:29:30)
+    at Layer.handleRequest (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:342:13)
+    at /home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:297:9
+    at processParams (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:582:12)
+    at next (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:291:5)
+    at Function.handle (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:186:3)
+    at router (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:60:12)
+    at Layer.handleRequest (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/lib/layer.js:152:17)
+2025-12-30T12:28:36.296Z - Auth Error: jwt malformed
+Stack: JsonWebTokenError: jwt malformed
+    at Object.module.exports [as verify] (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/jsonwebtoken/verify.js:70:17)
+    at authenticate (/home/joe/Desktop/Joe Stephen/Projects/plants/src/middlewares/auth.middleware.ts:29:30)
+    at Layer.handleRequest (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:342:13)
+    at /home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:297:9
+    at processParams (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:582:12)
+    at next (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:291:5)
+    at Function.handle (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:186:3)
+    at router (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:60:12)
+    at Layer.handleRequest (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/lib/layer.js:152:17)
+2025-12-30T12:28:48.449Z - Auth Error: jwt malformed
+Stack: JsonWebTokenError: jwt malformed
+    at Object.module.exports [as verify] (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/jsonwebtoken/verify.js:70:17)
+    at authenticate (/home/joe/Desktop/Joe Stephen/Projects/plants/src/middlewares/auth.middleware.ts:29:30)
+    at Layer.handleRequest (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:342:13)
+    at /home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:297:9
+    at processParams (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:582:12)
+    at next (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:291:5)
+    at Function.handle (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:186:3)
+    at router (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/index.js:60:12)
+    at Layer.handleRequest (/home/joe/Desktop/Joe Stephen/Projects/plants/node_modules/router/lib/layer.js:152:17)

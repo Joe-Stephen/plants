@@ -9,6 +9,8 @@ import CartItem from './CartItem';
 import Order from './Order';
 import OrderItem from './OrderItem';
 
+import AnalyticsDailySummary from './AnalyticsDailySummary';
+
 const env = process.env.NODE_ENV || 'development';
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 const config = require('../config/config')[env];
@@ -27,6 +29,7 @@ const models = {
   CartItem,
   Order,
   OrderItem,
+  AnalyticsDailySummary,
 };
 
 Object.values(models).forEach((model: any) => {

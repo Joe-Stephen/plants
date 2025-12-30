@@ -19,7 +19,10 @@ export const authenticate = async (
 
     if (!token) {
       return next(
-        new AppError('You are not logged in! Please log in to get access.', 401),
+        new AppError(
+          'You are not logged in! Please log in to get access.',
+          401,
+        ),
       );
     }
 
@@ -41,4 +44,15 @@ export const authenticate = async (
   } catch (error) {
     return next(new AppError('Invalid token or session expired', 401));
   }
+};
+
+export const authorizeRole = (...roles: string[]) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403),
+      );
+    }
+    next();
+  };
 };
