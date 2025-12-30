@@ -8,7 +8,9 @@ export const createOrder = async (userId: number, addressId: number) => {
   const transaction = await sequelize.transaction();
   try {
     // 1. Validate Address
-    const address = await models.Address.findOne({ where: { id: addressId, userId } });
+    const address = await models.Address.findOne({
+      where: { id: addressId, userId },
+    });
     if (!address) {
       throw new AppError('Address not found', 404);
     }
@@ -40,7 +42,7 @@ export const createOrder = async (userId: number, addressId: number) => {
         total,
         status: 'PENDING',
       },
-      { transaction }
+      { transaction },
     );
 
     // 5. Create Order Items
@@ -81,7 +83,7 @@ export const verifyPayment = async (
   userId: number,
   razorpayOrderId: string,
   razorpayPaymentId: string,
-  signature: string
+  signature: string,
 ) => {
   const transaction = await sequelize.transaction();
   try {
@@ -108,21 +110,25 @@ export const verifyPayment = async (
     }
 
     // 3. Update Order Status
-    await order.update(
-      { status: 'PAID', razorpayPaymentId },
-      { transaction }
-    );
+    await order.update({ status: 'PAID', razorpayPaymentId }, { transaction });
 
     // 4. Deduct Stock
     // We need to fetch items again or assume they matched (better to fetch from DB to be safe)
-    const orderItems = await models.OrderItem.findAll({ where: { orderId: order.id } });
-    
+    const orderItems = await models.OrderItem.findAll({
+      where: { orderId: order.id },
+    });
+
     for (const item of orderItems) {
       if (!item.productId) continue;
-      const product = await models.Product.findByPk(item.productId, { transaction });
+      const product = await models.Product.findByPk(item.productId, {
+        transaction,
+      });
       if (product) {
         if (product.stock < item.quantity) {
-             throw new AppError(`Stock ran out for product ID ${item.productId} during payment`, 400);
+          throw new AppError(
+            `Stock ran out for product ID ${item.productId} during payment`,
+            400,
+          );
         }
         await product.decrement('stock', { by: item.quantity, transaction });
       }
@@ -131,7 +137,10 @@ export const verifyPayment = async (
     // 5. Clear User Cart
     const cart = await models.Cart.findOne({ where: { userId } });
     if (cart) {
-      await models.CartItem.destroy({ where: { cartId: cart.id }, transaction });
+      await models.CartItem.destroy({
+        where: { cartId: cart.id },
+        transaction,
+      });
     }
 
     await transaction.commit();
@@ -157,7 +166,19 @@ export const getUserOrders = async (userId: number, query: any) => {
     limit,
     offset,
     order: [['createdAt', 'DESC']],
-    include: [{ model: models.OrderItem, as: 'items' }],
+    include: [
+      {
+        model: models.OrderItem,
+        as: 'items',
+        include: [
+          {
+            model: models.Product,
+            as: 'product',
+            include: ['images'],
+          },
+        ],
+      },
+    ],
     distinct: true,
   });
 
@@ -211,7 +232,17 @@ export const getAllOrders = async (query: any) => {
     order: [['createdAt', 'DESC']],
     include: [
       { model: models.User, as: 'user', attributes: ['id', 'name', 'email'] },
-      { model: models.OrderItem, as: 'items' },
+      {
+        model: models.OrderItem,
+        as: 'items',
+        include: [
+          {
+            model: models.Product,
+            as: 'product',
+            include: ['images'],
+          },
+        ],
+      },
     ],
     distinct: true,
   });

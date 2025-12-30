@@ -6,7 +6,7 @@ export interface OrderItem {
   product: {
     name: string;
     price: string;
-    images: { url: string; isPrimary: boolean }[];
+    images: { url: string; is_primary: boolean }[];
   };
 }
 
@@ -31,16 +31,28 @@ export interface OrderDetail {
 
 export const orderApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getMyOrders: builder.query<{ orders: OrderDetail[]; metadata: any }, number>({
+    getMyOrders: builder.query<
+      { orders: OrderDetail[]; metadata: any },
+      number
+    >({
       query: (page = 1) => `/orders/my-orders?page=${page}`,
+      transformResponse: (response: {
+        data: { orders: OrderDetail[]; metadata: any };
+      }) => response.data,
       providesTags: ['Orders'],
     }),
-    getAllOrders: builder.query<{ orders: OrderDetail[]; metadata: any }, { page?: number; status?: string }>({
+    getAllOrders: builder.query<
+      { orders: OrderDetail[]; metadata: any },
+      { page?: number; status?: string }
+    >({
       query: ({ page = 1, status }) => {
         let url = `/orders/admin/all?page=${page}`;
         if (status) url += `&status=${status}`;
         return url;
       },
+      transformResponse: (response: {
+        data: { orders: OrderDetail[]; metadata: any };
+      }) => response.data,
       providesTags: ['Orders'],
     }),
     updateOrderStatus: builder.mutation<void, { id: number; status: string }>({
@@ -54,4 +66,8 @@ export const orderApi = api.injectEndpoints({
   }),
 });
 
-export const { useGetMyOrdersQuery, useGetAllOrdersQuery, useUpdateOrderStatusMutation } = orderApi;
+export const {
+  useGetMyOrdersQuery,
+  useGetAllOrdersQuery,
+  useUpdateOrderStatusMutation,
+} = orderApi;
