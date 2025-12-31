@@ -63,7 +63,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
       <div className="p-5">
         <div className="text-xs font-bold text-primary-600 tracking-wider uppercase mb-1">
-          Indoor
+          {product.category?.name || 'Plant'}
         </div>
         <Link to={`/shop/${product.id}`}>
           <h3 className="font-bold text-lg mb-2 text-gray-800 hover:text-primary-700 transition-colors truncate">

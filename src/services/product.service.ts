@@ -28,7 +28,10 @@ export const getAllProducts = async (query: any) => {
     where,
     limit,
     offset,
-    include: [{ model: models.ProductImage, as: 'images' }], // Correct association
+    include: [
+      { model: models.ProductImage, as: 'images' },
+      { model: models.Category, as: 'category' },
+    ],
     distinct: true,
   });
 

@@ -9,6 +9,7 @@ export interface Product {
   categoryId: number;
   careInstructions?: string;
   images: { id: number; url: string; is_primary: boolean }[];
+  category?: { id: number; name: string; slug: string };
 }
 
 interface ApiResponse<T> {
