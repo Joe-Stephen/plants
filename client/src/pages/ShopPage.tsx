@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { usePaginationParams } from '../hooks/usePaginationParams';
 import { useGetProductsQuery } from '../features/products/productApi';
 import ProductCard from '../components/ProductCard';
@@ -10,9 +10,13 @@ const ShopPage = () => {
     defaultLimit: 12,
   });
 
+  const [searchParams] = useSearchParams();
+  const categorySlug = searchParams.get('category');
+
   const queryParams = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
+    ...(categorySlug && { category: categorySlug }),
   }).toString();
 
   const { data, isLoading, error } = useGetProductsQuery(queryParams);

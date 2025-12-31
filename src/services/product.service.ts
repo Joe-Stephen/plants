@@ -24,13 +24,23 @@ export const getAllProducts = async (query: any) => {
     where.price = { ...where.price, [Op.lte]: query.maxPrice };
   }
 
+  if (query.category) {
+    // Filter by category slug
+    // We need to add the where clause to the include, not the main query
+  }
+
   const { count, rows } = await models.Product.findAndCountAll({
     where,
     limit,
     offset,
     include: [
       { model: models.ProductImage, as: 'images' },
-      { model: models.Category, as: 'category' },
+      {
+        model: models.Category,
+        as: 'category',
+        where: query.category ? { slug: query.category } : undefined,
+        required: !!query.category, // Inner join if filtering, left join otherwise
+      },
     ],
     distinct: true,
   });
