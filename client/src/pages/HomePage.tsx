@@ -13,7 +13,7 @@ const CATEGORY_IMAGES = [
 ];
 
 const HomePage = () => {
-  const { data, isLoading } = useGetProductsQuery();
+  const { data, isLoading } = useGetProductsQuery('sort=best_selling&limit=4');
   const { data: categoryData, isLoading: isCategoriesLoading } =
     useGetAllCategoriesQuery();
 

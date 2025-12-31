@@ -24,9 +24,73 @@ export const getAllProducts = async (query: any) => {
     where.price = { ...where.price, [Op.lte]: query.maxPrice };
   }
 
-  if (query.category) {
-    // Filter by category slug
-    // We need to add the where clause to the include, not the main query
+  if (query.sort === 'best_selling') {
+    try {
+      // Step 1: Get top product IDs sorted by sales
+      const topProducts = await models.Product.findAll({
+        attributes: [
+          'id',
+          [
+            sequelize.literal('COALESCE(SUM(`OrderItems`.`quantity`), 0)'),
+            'totalSold',
+          ],
+        ],
+        include: [
+          {
+            model: models.OrderItem,
+            attributes: [],
+          },
+        ],
+        group: ['Product.id'],
+        order: [[sequelize.literal('totalSold'), 'DESC']],
+        limit: limit || 4,
+        offset,
+        subQuery: false,
+      });
+
+      const productIds = topProducts.map((p: any) => p.id);
+
+      if (productIds.length === 0) {
+        return {
+          products: [],
+          metadata: {
+            total: 0,
+            page: 1,
+            limit: limit || 4,
+            totalPages: 0,
+          },
+        };
+      }
+
+      // Step 2: Fetch full details for these products
+      const products = await models.Product.findAll({
+        where: { id: productIds },
+        include: [
+          { model: models.ProductImage, as: 'images' },
+          { model: models.Category, as: 'category' },
+        ],
+      });
+
+      // Step 3: Sort products to match the order from Step 1
+      // Create a map for O(1) lookup or just use sort
+      const productsMap = new Map(products.map((p: any) => [p.id, p]));
+      const sortedProducts = productIds
+        .map((id: number) => productsMap.get(id))
+        .filter((p: any) => p !== undefined);
+
+      return {
+        products: sortedProducts,
+        metadata: {
+          total: sortedProducts.length,
+          page: 1,
+          limit: sortedProducts.length,
+          totalPages: 1,
+        },
+      };
+    } catch (error) {
+      console.error('BEST SELLING FETCH ERROR:', error);
+      throw error;
+    }
   }
 
   const { count, rows } = await models.Product.findAndCountAll({
@@ -39,7 +103,7 @@ export const getAllProducts = async (query: any) => {
         model: models.Category,
         as: 'category',
         where: query.category ? { slug: query.category } : undefined,
-        required: !!query.category, // Inner join if filtering, left join otherwise
+        required: !!query.category,
       },
     ],
     distinct: true,
