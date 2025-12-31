@@ -3,7 +3,11 @@ import * as productController from '../controllers/product.controller';
 import { validate } from '../middlewares/validate.middleware';
 import { authenticate } from '../middlewares/auth.middleware';
 import { authorizeRole } from '../middlewares/role.middleware';
-import { createProductSchema, updateProductSchema, queryProductSchema } from '../schemas/product.schema';
+import {
+  createProductSchema,
+  updateProductSchema,
+  queryProductSchema,
+} from '../schemas/product.schema';
 import { upload } from '../config/cloudinary';
 
 const router = Router();
@@ -17,22 +21,30 @@ router.post(
   authorizeRole('ADMIN'),
   upload.array('images', 5), // Allow up to 5 images
   validate(createProductSchema),
-  productController.create
+  productController.create,
 );
 
 router.put(
   '/:id',
   authenticate,
   authorizeRole('ADMIN'),
+  upload.array('images', 5), // Allow adding up to 5 images
   validate(updateProductSchema),
-  productController.update
+  productController.update,
 );
 
 router.delete(
   '/:id',
   authenticate,
   authorizeRole('ADMIN'),
-  productController.remove
+  productController.remove,
+);
+
+router.delete(
+  '/images/:id',
+  authenticate,
+  authorizeRole('ADMIN'),
+  productController.deleteImage,
 );
 
 export default router;

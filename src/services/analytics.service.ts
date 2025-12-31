@@ -73,12 +73,20 @@ export const getDashboardStats = async (startDate: Date, endDate: Date) => {
     where: { stock: 0 },
   });
 
+  // 6. Total Products (All time)
+  const totalProducts = await models.Product.count();
+
+  // 7. Total Users (All time)
+  const totalUsers = await models.User.count();
+
   return {
     totalRevenue,
     totalOrders,
     newUsers,
     lowStockCount,
     outOfStockCount,
+    totalProducts,
+    totalUsers,
   };
 };
 
@@ -87,85 +95,39 @@ export const getSalesChart = async (
   endDate: Date,
   groupBy: 'day' | 'month' = 'day',
 ) => {
-  // Optimization: Use cached data for past dates, live data for today
+  // Query Orders table directly for the full range to ensure data consistency
+  const dateFormat = groupBy === 'month' ? '%Y-%m' : '%Y-%m-%d';
 
-  // 1. Identify "Today" to split query
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Format dates for comparison
-  const todayStr = today.toISOString().split('T')[0];
-
-  // 2. Fetch Historical Data from Cache (AnalyticsDailySummary)
-  // Condition: date >= startDate AND date <= endDate AND date < today
-
-  const cachedData = await AnalyticsDailySummary.findAll({
+  const salesData = await models.Order.findAll({
+    attributes: [
+      [
+        Sequelize.fn('DATE_FORMAT', Sequelize.col('createdAt'), dateFormat),
+        'date',
+      ],
+      [Sequelize.fn('SUM', Sequelize.col('total')), 'revenue'],
+      [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
+    ],
     where: {
-      date: {
-        [Op.between]: [startDate, endDate],
-        [Op.lt]: todayStr, // Exclude today from cache, rely on live query
-      },
+      status: { [Op.in]: ['PAID', 'SHIPPED', 'DELIVERED'] },
+      createdAt: { [Op.between]: [startDate, endDate] },
     },
-    attributes: ['date', ['totalRevenue', 'revenue'], ['totalOrders', 'count']],
+    group: [
+      Sequelize.fn('DATE_FORMAT', Sequelize.col('createdAt'), dateFormat),
+    ],
+    order: [
+      [
+        Sequelize.fn('DATE_FORMAT', Sequelize.col('createdAt'), dateFormat),
+        'ASC',
+      ],
+    ],
     raw: true,
   });
 
-  // 3. Fetch Live Data for Today (if today is in range)
-  let liveData: any = [];
-  if (endDate >= today && startDate <= today) {
-    const endOfToday = new Date(today);
-    endOfToday.setHours(23, 59, 59, 999);
-
-    liveData = await models.Order.findAll({
-      attributes: [
-        [
-          Sequelize.fn('DATE_FORMAT', Sequelize.col('createdAt'), '%Y-%m-%d'),
-          'date',
-        ],
-        [Sequelize.fn('SUM', Sequelize.col('total')), 'revenue'],
-        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
-      ],
-      where: getCompletedOrderWhereClause({
-        startDate: today,
-        endDate: endOfToday,
-      }),
-      group: [
-        Sequelize.fn('DATE_FORMAT', Sequelize.col('createdAt'), '%Y-%m-%d'),
-      ],
-      raw: true,
-    });
-  }
-
-  // 4. Merge & Group (if groupBy month)
-  // For 'day' grouping, we can just concat.
-  const allData = [...cachedData, ...liveData].map((item: any) => ({
-    ...item,
-    revenue: parseFloat(item.revenue),
+  return salesData.map((item: any) => ({
+    date: item.date,
+    revenue: parseFloat(item.revenue) || 0,
     count: parseInt(item.count, 10) || 0,
   }));
-
-  if (groupBy === 'day') {
-    // Sort by date
-    return allData.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-  } else {
-    // Group by Month
-    // Map 'YYYY-MM-DD' -> 'YYYY-MM' and aggregate
-    const monthly: Record<string, any> = {};
-
-    for (const item of allData) {
-      const month = item.date.substring(0, 7); // YYYY-MM
-      if (!monthly[month])
-        monthly[month] = { date: month, revenue: 0, count: 0 };
-      monthly[month].revenue += item.revenue;
-      monthly[month].count += item.count;
-    }
-
-    return Object.values(monthly).sort((a: any, b: any) =>
-      a.date.localeCompare(b.date),
-    );
-  }
 };
 
 export const getNewUsersChart = async (

@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useGetMyOrdersQuery } from '../features/orders/orderApi';
 import { Loader2, Package } from 'lucide-react';
 
 const OrderHistoryPage = () => {
-  const { data, isLoading, error } = useGetMyOrdersQuery(1);
+  const [page, setPage] = useState(1);
+  const { data, isLoading, error } = useGetMyOrdersQuery(page);
 
   if (isLoading) {
     return (
@@ -21,6 +23,7 @@ const OrderHistoryPage = () => {
   }
 
   const orders = data?.orders || [];
+  const metadata = data?.metadata || { page: 1, totalPages: 1 };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -96,6 +99,31 @@ const OrderHistoryPage = () => {
               </div>
             </div>
           ))}
+
+          {/* Pagination */}
+          {metadata.totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 pt-6">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                Previous
+              </button>
+              <span className="text-sm font-medium text-gray-600">
+                Page {metadata.page} of {metadata.totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setPage((p) => Math.min(metadata.totalPages, p + 1))
+                }
+                disabled={page === metadata.totalPages}
+                className="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

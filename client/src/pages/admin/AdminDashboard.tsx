@@ -1,85 +1,314 @@
 import { useState } from 'react';
-import { useGetAllOrdersQuery, useUpdateOrderStatusMutation } from '../../features/orders/orderApi';
-import { Loader2 } from 'lucide-react';
+import LowStockAlert from '../../components/dashboard/LowStockAlert';
+import { useGetAllOrdersQuery } from '../../features/orders/orderApi';
+import {
+  useGetSalesChartQuery,
+  useGetOrdersByStatusQuery,
+  useGetNewUsersChartQuery,
+  useGetTopProductsQuery,
+  useGetCategorySalesQuery,
+  useGetDashboardStatsQuery,
+} from '../../features/analytics/analyticsApi';
+import { exportToCSV } from '../../utils/exportUtils';
+import {
+  Loader2,
+  DollarSign,
+  ShoppingBag,
+  Clock,
+  TrendingUp,
+  Calendar,
+  Download,
+  RefreshCw,
+  Users,
+  Package,
+} from 'lucide-react';
+import {
+  RevenueChart,
+  OrderStatusChart,
+  NewUsersChart,
+  TopProductsChart,
+  CategorySalesChart,
+} from '../../components/charts/DashboardCharts';
+// ... imports
 
 const AdminDashboard = () => {
-  const [statusFilter, setStatusFilter] = useState('');
-  const { data, isLoading } = useGetAllOrdersQuery({ page: 1, status: statusFilter });
-  const [updateStatus] = useUpdateOrderStatusMutation();
+  // Date Range State
+  const [dateRange, setDateRange] = useState<{
+    startDate: string;
+    endDate: string;
+    period: string;
+  }>({
+    startDate: '',
+    endDate: '',
+    period: '30d',
+  });
 
-  if (isLoading) return <div className="p-10 text-center"><Loader2 className="animate-spin inline" /></div>;
+  // Auto Refresh State
+  const [isAutoRefresh, setIsAutoRefresh] = useState(false);
 
-  const orders = data?.orders || [];
+  const handleRangeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const period = e.target.value;
+    if (period === 'custom') {
+      setDateRange({ ...dateRange, period });
+      return;
+    }
+
+    const end = new Date();
+    const start = new Date();
+
+    if (period === '7d') {
+      start.setDate(end.getDate() - 7);
+    } else if (period === '30d') {
+      start.setDate(end.getDate() - 30);
+    } else if (period === 'thisMonth') {
+      start.setDate(1);
+    }
+
+    setDateRange({
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
+      period,
+    });
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateRange({
+      ...dateRange,
+      [e.target.name]: e.target.value,
+      period: 'custom',
+    });
+  };
+
+  const filter = {
+    startDate: dateRange.startDate || undefined,
+    endDate: dateRange.endDate || undefined,
+  };
+
+  const pollingInterval = isAutoRefresh ? 30000 : 0;
+  const refetchOptions = {
+    refetchOnMountOrArgChange: true,
+    pollingInterval,
+  };
+
+  const { data: ordersData, isLoading: isLoadingOrders } = useGetAllOrdersQuery(
+    { page: 1 },
+    refetchOptions,
+  );
+  const { data: salesData, isLoading: isLoadingSales } = useGetSalesChartQuery(
+    filter,
+    refetchOptions,
+  );
+  const { data: statusData, isLoading: isLoadingStatus } =
+    useGetOrdersByStatusQuery(filter, refetchOptions);
+  const { data: newUsersData, isLoading: isLoadingUsers } =
+    useGetNewUsersChartQuery(filter, refetchOptions);
+  const { data: topProductsData, isLoading: isLoadingTop } =
+    useGetTopProductsQuery(filter, refetchOptions);
+  const { data: categoryData, isLoading: isLoadingCategory } =
+    useGetCategorySalesQuery(filter, refetchOptions);
+  const { data: dashboardStats, isLoading: isLoadingStats } =
+    useGetDashboardStatsQuery(filter, refetchOptions);
+
+  const isLoading =
+    isLoadingOrders ||
+    isLoadingSales ||
+    isLoadingStatus ||
+    isLoadingUsers ||
+    isLoadingTop ||
+    isLoadingCategory ||
+    isLoadingStats;
+
+  const handleExport = () => {
+    if (salesData) {
+      exportToCSV(salesData, `sales_report_${dateRange.period}`);
+    }
+  };
+
+  // KPIs from API
+  const totalRevenue = Number(dashboardStats?.totalRevenue) || 0;
+  const totalOrders = Number(dashboardStats?.totalOrders) || 0;
+  const totalProducts = Number(dashboardStats?.totalProducts) || 0;
+  const totalUsers = Number(dashboardStats?.totalUsers) || 0;
+
+  const kpiCards = [
+    {
+      label: 'Total Revenue',
+      value: `₹${totalRevenue.toLocaleString()}`,
+      icon: DollarSign,
+      color: 'bg-green-100 text-green-600',
+    },
+    {
+      label: 'Total Orders',
+      value: totalOrders,
+      icon: ShoppingBag,
+      color: 'bg-blue-100 text-blue-600',
+    },
+    {
+      label: 'Total Products',
+      value: totalProducts,
+      icon: Package,
+      color: 'bg-orange-100 text-orange-600',
+    },
+    {
+      label: 'Total Users',
+      value: totalUsers,
+      icon: Users,
+      color: 'bg-purple-100 text-purple-600',
+    },
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <select 
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="border rounded-lg p-2"
-        >
-          <option value="">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="PAID">Paid</option>
-          <option value="SHIPPED">Shipped</option>
-          <option value="DELIVERED">Delivered</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
+    <div className="space-y-8 pb-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Dashboard Overview
+          </h1>
+          <p className="text-gray-500">Welcome back to your store overview</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+          >
+            <Download size={18} />
+            Export Report
+          </button>
+
+          <button
+            onClick={() => setIsAutoRefresh(!isAutoRefresh)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${
+              isAutoRefresh
+                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <RefreshCw
+              size={18}
+              className={isAutoRefresh ? 'animate-spin' : ''}
+            />
+            {isAutoRefresh ? 'Auto-Refresh On' : 'Auto-Refresh Off'}
+          </button>
+
+          {/* Date Filter Controls */}
+          <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-lg border shadow-sm">
+            <div className="flex items-center gap-2 px-2 text-gray-500">
+              <Calendar size={18} />
+              <span className="text-sm font-medium">Filter:</span>
+            </div>
+            <select
+              value={dateRange.period}
+              onChange={handleRangeChange}
+              className="text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 p-1.5 border"
+            >
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="thisMonth">This Month</option>
+              <option value="custom">Custom Range</option>
+            </select>
+
+            {dateRange.period === 'custom' && (
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                <input
+                  type="date"
+                  name="startDate"
+                  value={dateRange.startDate}
+                  onChange={handleDateChange}
+                  className="text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 p-1.5 border"
+                />
+                <span className="text-gray-400">-</span>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={dateRange.endDate}
+                  onChange={handleDateChange}
+                  className="text-sm border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 p-1.5 border"
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="p-4 font-semibold text-gray-600">Order ID</th>
-              <th className="p-4 font-semibold text-gray-600">User</th>
-              <th className="p-4 font-semibold text-gray-600">Date</th>
-              <th className="p-4 font-semibold text-gray-600">Total</th>
-              <th className="p-4 font-semibold text-gray-600">Status</th>
-              <th className="p-4 font-semibold text-gray-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-50">
-                <td className="p-4">#{order.id}</td>
-                <td className="p-4">
-                  <div className="font-medium">{order.user?.name}</div>
-                  <div className="text-sm text-gray-500">{order.user?.email}</div>
-                </td>
-                <td className="p-4 text-gray-600">{new Date(order.createdAt).toLocaleDateString()}</td>
-                <td className="p-4 font-bold">₹{order.total}</td>
-                <td className="p-4">
-                   <span className={`px-2 py-1 rounded text-xs font-bold ${
-                      order.status === 'PAID' ? 'bg-green-100 text-green-700' :
-                      order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                      order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-700'
-                   }`}>
-                      {order.status}
-                   </span>
-                </td>
-                <td className="p-4">
-                  <select
-                    value={order.status}
-                    onChange={(e) => updateStatus({ id: order.id, status: e.target.value })}
-                    className="text-sm border rounded p-1"
-                    disabled={order.status === 'DELIVERED' || order.status === 'CANCELLED'}
-                  >
-                    <option value="PENDING">PENDING</option>
-                    <option value="PAID">PAID</option>
-                    <option value="SHIPPED">SHIPPED</option>
-                    <option value="DELIVERED">DELIVERED</option>
-                    <option value="CANCELLED">CANCELLED</option>
-                  </select>
-                </td>
-              </tr>
+      <LowStockAlert />
+
+      {isLoading && (
+        <div className="p-10 text-center">
+          <Loader2 className="animate-spin inline text-green-600" size={32} />
+        </div>
+      )}
+
+      {!isLoading && (
+        <>
+          {/* KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {kpiCards.map((card, index) => (
+              <div
+                key={index}
+                className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700 transition-transform hover:-translate-y-1 duration-200"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      {card.label}
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                      {card.value}
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-lg ${card.color}`}>
+                    <card.icon size={24} />
+                  </div>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Revenue Chart */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+                Revenue Over Time
+              </h3>
+              <RevenueChart data={salesData || []} />
+            </div>
+
+            {/* Order Status Chart */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+                Orders by Status
+              </h3>
+              <OrderStatusChart data={statusData || []} />
+            </div>
+
+            {/* New Users Chart */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+                New Users Over Time
+              </h3>
+              <NewUsersChart data={newUsersData || []} />
+            </div>
+
+            {/* Top Products Chart */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+                Top Selling Products
+              </h3>
+              <TopProductsChart data={topProductsData || []} />
+            </div>
+
+            {/* Category Sales Chart */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border col-span-1 lg:col-span-2">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">
+                Sales by Category
+              </h3>
+              <CategorySalesChart data={categoryData || []} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

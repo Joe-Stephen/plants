@@ -16,5 +16,14 @@ const storage = new CloudinaryStorage({
   } as any, // Type assertion needed for strict mode in some versions
 });
 
+export const deleteImage = async (publicId: string) => {
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error('Error deleting image from Cloudinary:', error);
+    // We don't throw here to avoid blocking DB deletion if cleanup fails
+  }
+};
+
 export const upload = multer({ storage: storage });
 export { cloudinary };

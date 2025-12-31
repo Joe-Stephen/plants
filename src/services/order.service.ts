@@ -171,8 +171,8 @@ export const verifyPayment = async (
 };
 
 export const getUserOrders = async (userId: number, query: any) => {
-  const page = query.page || 1;
-  const limit = query.limit || 10;
+  const page = query.page ? Number(query.page) : 1;
+  const limit = query.limit ? Number(query.limit) : 10;
   const offset = (page - 1) * limit;
   const where: any = { userId };
 
@@ -235,8 +235,8 @@ export const getOrderById = async (orderId: number, userId?: number) => {
 };
 
 export const getAllOrders = async (query: any) => {
-  const page = query.page || 1;
-  const limit = query.limit || 10;
+  const page = query.page ? Number(query.page) : 1;
+  const limit = query.limit ? Number(query.limit) : 10;
   const offset = (page - 1) * limit;
   const where: any = {};
 

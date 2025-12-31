@@ -1,9 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const api = createApi({
-
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({ 
+  baseQuery: fetchBaseQuery({
     baseUrl: '/api',
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth.token;
@@ -13,6 +12,6 @@ export const api = createApi({
       return headers;
     },
   }),
-  tagTypes: ['User', 'Products', 'Cart', 'Orders', 'Addresses'],
+  tagTypes: ['User', 'Products', 'Cart', 'Orders', 'Addresses', 'Category'],
   endpoints: () => ({}),
 });

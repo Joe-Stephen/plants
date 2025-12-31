@@ -100,6 +100,7 @@ const ProductDetailPage = () => {
             <img
               src={images[activeImageIndex].url}
               alt={product.name}
+              loading="lazy"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </div>
@@ -153,6 +154,17 @@ const ProductDetailPage = () => {
           <div className="prose prose-gray max-w-none text-gray-600 mb-10 leading-relaxed">
             <p>{product.description}</p>
           </div>
+
+          {product.careInstructions && (
+            <div className="bg-green-50 rounded-xl p-6 mb-10">
+              <h3 className="font-bold text-green-900 mb-2 flex items-center gap-2">
+                🌱 Care Guide
+              </h3>
+              <p className="text-green-800 leading-relaxed">
+                {product.careInstructions}
+              </p>
+            </div>
+          )}
 
           <div className="border-t border-b border-gray-100 py-8 mb-8 space-y-6">
             <div className="flex items-center justify-between">

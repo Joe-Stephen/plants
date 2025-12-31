@@ -7,6 +7,7 @@ export interface Product {
   price: string;
   stock: number;
   categoryId: number;
+  careInstructions?: string;
   images: { id: number; url: string; is_primary: boolean }[];
 }
 
@@ -32,9 +33,52 @@ export const productApi = api.injectEndpoints({
       query: (id) => `/products/${id}`,
       transformResponse: (response: ApiResponse<{ product: Product }>) =>
         response.data,
-      providesTags: ['Products'],
+      providesTags: (_result, _error, id) => [{ type: 'Products', id }],
+    }),
+    createProduct: builder.mutation<{ product: Product }, FormData>({
+      query: (body) => ({
+        url: '/products',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Products'],
+    }),
+    updateProduct: builder.mutation<
+      { product: Product },
+      { id: number; data: FormData }
+    >({
+      query: ({ id, data }) => ({
+        url: `/products/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        'Products',
+        { type: 'Products', id },
+      ],
+    }),
+    deleteProduct: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/products/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Products'],
+    }),
+    deleteProductImage: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/products/images/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, _id) => ['Products'],
     }),
   }),
 });
 
-export const { useGetProductsQuery, useGetProductByIdQuery } = productApi;
+export const {
+  useGetProductsQuery,
+  useGetProductByIdQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+  useDeleteProductImageMutation,
+} = productApi;
