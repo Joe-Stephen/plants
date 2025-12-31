@@ -170,10 +170,10 @@ export const verifyPayment = async (
   }
 };
 
+import { getPagination, getPagingData } from '../utils/pagination';
+
 export const getUserOrders = async (userId: number, query: any) => {
-  const page = query.page ? Number(query.page) : 1;
-  const limit = query.limit ? Number(query.limit) : 10;
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = getPagination(query);
   const where: any = { userId };
 
   if (query.status) {
@@ -193,7 +193,7 @@ export const getUserOrders = async (userId: number, query: any) => {
           {
             model: models.Product,
             as: 'product',
-            include: ['images'],
+            include: [{ model: models.ProductImage, as: 'images' }],
           },
         ],
       },
@@ -201,14 +201,11 @@ export const getUserOrders = async (userId: number, query: any) => {
     distinct: true,
   });
 
+  const result = getPagingData(rows, count, page, limit);
+
   return {
-    orders: rows,
-    metadata: {
-      total: count,
-      page,
-      limit,
-      totalPages: Math.ceil(count / limit),
-    },
+    orders: result.data,
+    metadata: result.metadata,
   };
 };
 
@@ -235,9 +232,7 @@ export const getOrderById = async (orderId: number, userId?: number) => {
 };
 
 export const getAllOrders = async (query: any) => {
-  const page = query.page ? Number(query.page) : 1;
-  const limit = query.limit ? Number(query.limit) : 10;
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = getPagination(query);
   const where: any = {};
 
   if (query.status) {
@@ -250,7 +245,11 @@ export const getAllOrders = async (query: any) => {
     offset,
     order: [['createdAt', 'DESC']],
     include: [
-      { model: models.User, as: 'user', attributes: ['id', 'name', 'email'] },
+      {
+        model: models.User,
+        as: 'user',
+        attributes: ['id', 'name', 'email'],
+      },
       {
         model: models.OrderItem,
         as: 'items',
@@ -258,7 +257,7 @@ export const getAllOrders = async (query: any) => {
           {
             model: models.Product,
             as: 'product',
-            include: ['images'],
+            include: [{ model: models.ProductImage, as: 'images' }],
           },
         ],
       },
@@ -266,14 +265,11 @@ export const getAllOrders = async (query: any) => {
     distinct: true,
   });
 
+  const result = getPagingData(rows, count, page, limit);
+
   return {
-    orders: rows,
-    metadata: {
-      total: count,
-      page,
-      limit,
-      totalPages: Math.ceil(count / limit),
-    },
+    orders: result.data,
+    metadata: result.metadata,
   };
 };
 

@@ -4,10 +4,10 @@ import { Op } from 'sequelize';
 import { sequelize } from '../models'; // Import named export for transactions
 import { deleteImage } from '../config/cloudinary';
 
+import { getPagination, getPagingData } from '../utils/pagination';
+
 export const getAllProducts = async (query: any) => {
-  const page = query.page ? Number(query.page) : 1;
-  const limit = query.limit ? Number(query.limit) : 10;
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = getPagination(query);
 
   const where: any = {};
 
@@ -32,14 +32,11 @@ export const getAllProducts = async (query: any) => {
     distinct: true,
   });
 
+  const result = getPagingData(rows, count, page, limit);
+  // Maintain existing return structure for compatibility
   return {
-    products: rows,
-    metadata: {
-      total: count,
-      page,
-      limit,
-      totalPages: Math.ceil(count / limit),
-    },
+    products: result.data,
+    metadata: result.metadata,
   };
 };
 

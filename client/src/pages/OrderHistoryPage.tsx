@@ -1,9 +1,10 @@
-import { useState } from 'react';
 import { useGetMyOrdersQuery } from '../features/orders/orderApi';
 import { Loader2, Package } from 'lucide-react';
+import Pagination from '../components/common/Pagination';
+import { usePaginationParams } from '../hooks/usePaginationParams';
 
 const OrderHistoryPage = () => {
-  const [page, setPage] = useState(1);
+  const { page, limit, setPage, setLimit } = usePaginationParams();
   const { data, isLoading, error } = useGetMyOrdersQuery(page);
 
   if (isLoading) {
@@ -101,29 +102,16 @@ const OrderHistoryPage = () => {
           ))}
 
           {/* Pagination */}
-          {metadata.totalPages > 1 && (
-            <div className="flex justify-center items-center gap-4 pt-6">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
-              >
-                Previous
-              </button>
-              <span className="text-sm font-medium text-gray-600">
-                Page {metadata.page} of {metadata.totalPages}
-              </span>
-              <button
-                onClick={() =>
-                  setPage((p) => Math.min(metadata.totalPages, p + 1))
-                }
-                disabled={page === metadata.totalPages}
-                className="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <div className="pt-6">
+            <Pagination
+              currentPage={metadata.page}
+              totalPages={metadata.totalPages}
+              onPageChange={setPage}
+              itemsPerPage={limit}
+              onItemsPerPageChange={setLimit}
+              totalItems={metadata.total}
+            />
+          </div>
         </div>
       )}
     </div>

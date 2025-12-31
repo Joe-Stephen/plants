@@ -4,20 +4,16 @@ import {
   useGetProductsQuery,
   useDeleteProductMutation,
 } from '../../features/products/productApi';
-import {
-  Edit2,
-  Trash2,
-  Plus,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  Package,
-} from 'lucide-react';
+import { Edit2, Trash2, Plus, Loader2, Package } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import Pagination from '../../components/common/Pagination';
+import { usePaginationParams } from '../../hooks/usePaginationParams';
 
 const AdminProductsPage = () => {
-  const [page, setPage] = useState(1);
-  const { data, isLoading } = useGetProductsQuery(`page=${page}&limit=10`);
+  const { page, limit, setPage, setLimit } = usePaginationParams();
+  const { data, isLoading } = useGetProductsQuery(
+    `page=${page}&limit=${limit}`,
+  );
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -179,31 +175,14 @@ const AdminProductsPage = () => {
         </div>
 
         {/* Pagination */}
-        {metadata.totalPages > 1 && (
-          <div className="p-4 border-t dark:border-gray-700 flex items-center justify-between">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Showing page {metadata.page} of {metadata.totalPages}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="p-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-300"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <button
-                onClick={() =>
-                  setPage((p) => Math.min(metadata.totalPages, p + 1))
-                }
-                disabled={page === metadata.totalPages}
-                className="p-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-300"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={metadata.page}
+          totalPages={metadata.totalPages}
+          onPageChange={setPage}
+          itemsPerPage={limit}
+          onItemsPerPageChange={setLimit}
+          totalItems={metadata.total}
+        />
       </div>
     </div>
   );

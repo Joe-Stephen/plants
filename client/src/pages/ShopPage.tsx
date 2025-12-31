@@ -1,12 +1,14 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { usePaginationParams } from '../hooks/usePaginationParams';
 import { useGetProductsQuery } from '../features/products/productApi';
 import ProductCard from '../components/ProductCard';
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import Pagination from '../components/common/Pagination';
+import { Loader2 } from 'lucide-react';
 
 const ShopPage = () => {
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(12);
+  const { page, limit, setPage, setLimit } = usePaginationParams({
+    defaultLimit: 12,
+  });
 
   const queryParams = new URLSearchParams({
     page: page.toString(),
@@ -17,13 +19,6 @@ const ShopPage = () => {
 
   const products = data?.products || [];
   const metadata = data?.metadata || { total: 0, totalPages: 1 };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= metadata.totalPages) {
-      setPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
 
   if (isLoading) {
     return (
@@ -50,24 +45,6 @@ const ShopPage = () => {
             Showing {products.length} of {metadata.total} products
           </p>
         </div>
-
-        {/* Limit Selector */}
-        <div className="flex items-center gap-2 mt-4 md:mt-0">
-          <span className="text-sm text-gray-600">Show:</span>
-          <select
-            value={limit}
-            onChange={(e) => {
-              setLimit(Number(e.target.value));
-              setPage(1); // Reset to first page on limit change
-            }}
-            className="border-gray-300 rounded-md text-sm focus:ring-primary-500 focus:border-primary-500 p-1.5 border"
-          >
-            <option value="8">8</option>
-            <option value="12">12</option>
-            <option value="24">24</option>
-            <option value="48">48</option>
-          </select>
-        </div>
       </div>
 
       {products.length === 0 ? (
@@ -90,30 +67,16 @@ const ShopPage = () => {
             ))}
           </div>
 
-          {/* Pagination Controls */}
-          {metadata.totalPages > 1 && (
-            <div className="flex justify-center items-center mt-12 gap-4">
-              <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={20} />
-              </button>
-
-              <span className="text-sm font-medium text-gray-700">
-                Page {page} of {metadata.totalPages}
-              </span>
-
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === metadata.totalPages}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={metadata.totalPages}
+            onPageChange={setPage}
+            itemsPerPage={limit}
+            onItemsPerPageChange={setLimit}
+            totalItems={metadata.total}
+            pageSizeOptions={[8, 12, 24, 48]}
+            className="mt-12"
+          />
         </>
       )}
     </div>

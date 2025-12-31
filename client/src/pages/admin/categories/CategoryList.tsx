@@ -7,10 +7,11 @@ import {
 } from '../../../features/categories/categoryApi';
 import { Edit2, Trash2, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import Pagination from '../../../components/common/Pagination';
+import { usePaginationParams } from '../../../hooks/usePaginationParams';
 
 const CategoryList = () => {
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const { page, limit, setPage, setLimit } = usePaginationParams();
 
   const queryParams = new URLSearchParams({
     page: page.toString(),
@@ -46,7 +47,7 @@ const CategoryList = () => {
   }
 
   const categories = data?.categories || [];
-  const metadata = data?.metadata || { page: 1, totalPages: 1 };
+  const metadata = data?.metadata || { page: 1, totalPages: 1, total: 0 }; // Added total to metadata
 
   return (
     <div className="space-y-6">
@@ -148,31 +149,14 @@ const CategoryList = () => {
         </div>
 
         {/* Pagination */}
-        {metadata.totalPages > 1 && (
-          <div className="p-4 border-t dark:border-gray-700 flex items-center justify-between">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Showing page {metadata.page} of {metadata.totalPages}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-3 py-1 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() =>
-                  setPage((p) => Math.min(metadata.totalPages, p + 1))
-                }
-                disabled={page === metadata.totalPages}
-                className="px-3 py-1 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={metadata.page}
+          totalPages={metadata.totalPages}
+          onPageChange={setPage}
+          itemsPerPage={limit}
+          onItemsPerPageChange={setLimit}
+          totalItems={metadata.total}
+        />
       </div>
     </div>
   );

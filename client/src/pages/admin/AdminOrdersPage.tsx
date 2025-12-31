@@ -4,9 +4,11 @@ import {
   useUpdateOrderStatusMutation,
 } from '../../features/orders/orderApi';
 import { Loader2, Filter } from 'lucide-react';
+import Pagination from '../../components/common/Pagination';
+import { usePaginationParams } from '../../hooks/usePaginationParams';
 
 const AdminOrdersPage = () => {
-  const [page, setPage] = useState(1);
+  const { page, limit, setPage, setLimit } = usePaginationParams();
   const [statusFilter, setStatusFilter] = useState('');
   const { data, isLoading } = useGetAllOrdersQuery({
     page,
@@ -22,7 +24,7 @@ const AdminOrdersPage = () => {
     );
 
   const orders = data?.orders || [];
-  const metadata = data?.metadata || { page: 1, totalPages: 1 };
+  const metadata = data?.metadata || { page: 1, totalPages: 1, total: 0 };
 
   return (
     <div className="space-y-6">
@@ -144,31 +146,16 @@ const AdminOrdersPage = () => {
         </div>
 
         {/* Pagination */}
-        {metadata.totalPages > 1 && (
-          <div className="p-4 border-t flex items-center justify-between bg-gray-50">
-            <div className="text-sm text-gray-500">
-              Page {metadata.page} of {metadata.totalPages}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() =>
-                  setPage((p) => Math.min(metadata.totalPages, p + 1))
-                }
-                disabled={page === metadata.totalPages}
-                className="px-3 py-1 border rounded bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <div className="p-4 bg-gray-50 border-t">
+          <Pagination
+            currentPage={metadata.page}
+            totalPages={metadata.totalPages}
+            onPageChange={setPage}
+            itemsPerPage={limit}
+            onItemsPerPageChange={setLimit}
+            totalItems={metadata.total}
+          />
+        </div>
       </div>
     </div>
   );

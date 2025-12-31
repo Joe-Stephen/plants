@@ -1,10 +1,10 @@
 import models from '../models';
 import { AppError } from '../utils/AppError';
 
+import { getPagination, getPagingData } from '../utils/pagination';
+
 export const getAllCategories = async (query: any = {}) => {
-  const page = query.page ? Number(query.page) : 1;
-  const limit = query.limit ? Number(query.limit) : 100;
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = getPagination(query);
 
   const { count, rows } = await models.Category.findAndCountAll({
     limit,
@@ -13,14 +13,11 @@ export const getAllCategories = async (query: any = {}) => {
     distinct: true,
   });
 
+  const result = getPagingData(rows, count, page, limit);
+
   return {
-    categories: rows,
-    metadata: {
-      total: count,
-      page,
-      limit,
-      totalPages: Math.ceil(count / limit),
-    },
+    categories: result.data,
+    metadata: result.metadata,
   };
 };
 
