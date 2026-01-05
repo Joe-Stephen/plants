@@ -7,12 +7,18 @@ import { Loader2, Filter } from 'lucide-react';
 import Pagination from '../../components/common/Pagination';
 import { usePaginationParams } from '../../hooks/usePaginationParams';
 
+import { useSearchParams } from 'react-router-dom';
+
 const AdminOrdersPage = () => {
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get('userId') || '';
+
   const { page, limit, setPage, setLimit } = usePaginationParams();
   const [statusFilter, setStatusFilter] = useState('');
   const { data, isLoading } = useGetAllOrdersQuery({
     page,
     status: statusFilter,
+    userId,
   });
   const [updateStatus] = useUpdateOrderStatusMutation();
 

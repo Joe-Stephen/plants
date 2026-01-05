@@ -238,6 +238,9 @@ export const getAllOrders = async (query: any) => {
   if (query.status) {
     where.status = query.status;
   }
+  if (query.userId) {
+    where.userId = query.userId;
+  }
 
   const { count, rows } = await models.Order.findAndCountAll({
     where,

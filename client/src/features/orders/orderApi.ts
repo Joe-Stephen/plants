@@ -43,11 +43,12 @@ export const orderApi = api.injectEndpoints({
     }),
     getAllOrders: builder.query<
       { orders: OrderDetail[]; metadata: any },
-      { page?: number; status?: string }
+      { page?: number; status?: string; userId?: string }
     >({
-      query: ({ page = 1, status }) => {
+      query: ({ page = 1, status, userId }) => {
         let url = `/orders/admin/all?page=${page}`;
         if (status) url += `&status=${status}`;
+        if (userId) url += `&userId=${userId}`;
         return url;
       },
       transformResponse: (response: {

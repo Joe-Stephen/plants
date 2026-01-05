@@ -6,6 +6,7 @@ class User extends Model {
   public email!: string;
   public password_hash!: string;
   public role!: 'USER' | 'ADMIN';
+  public status!: 'active' | 'inactive';
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -33,6 +34,10 @@ class User extends Model {
         role: {
           type: DataTypes.ENUM('USER', 'ADMIN'),
           defaultValue: 'USER',
+        },
+        status: {
+          type: DataTypes.ENUM('active', 'inactive'),
+          defaultValue: 'active',
         },
       },
       {

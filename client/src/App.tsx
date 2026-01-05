@@ -16,6 +16,7 @@ import AdminOrdersPage from './pages/admin/AdminOrdersPage';
 import AdminProductsPage from './pages/admin/AdminProductsPage';
 import ProductForm from './pages/admin/products/ProductForm';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminUserDetailsPage from './pages/admin/AdminUserDetailsPage';
 import CategoryList from './pages/admin/categories/CategoryList';
 import CategoryForm from './pages/admin/categories/CategoryForm';
 import AdminRoute from './components/AdminRoute';
@@ -61,6 +62,7 @@ const App = () => {
             <Route path="categories/new" element={<CategoryForm />} />
             <Route path="categories/:id/edit" element={<CategoryForm />} />
             <Route path="users" element={<AdminUsersPage />} />
+            <Route path="users/:id" element={<AdminUserDetailsPage />} />
           </Route>
         </Route>
       </Routes>
