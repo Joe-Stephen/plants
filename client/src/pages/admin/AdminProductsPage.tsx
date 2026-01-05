@@ -4,16 +4,26 @@ import {
   useGetProductsQuery,
   useDeleteProductMutation,
 } from '../../features/products/productApi';
-import { Edit2, Trash2, Plus, Loader2, Package } from 'lucide-react';
+import { Edit2, Trash2, Plus, Loader2, Package, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Pagination from '../../components/common/Pagination';
 import { usePaginationParams } from '../../hooks/usePaginationParams';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const AdminProductsPage = () => {
   const { page, limit, setPage, setLimit } = usePaginationParams();
-  const { data, isLoading } = useGetProductsQuery(
-    `page=${page}&limit=${limit}`,
-  );
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    ...(debouncedSearch && { search: debouncedSearch }),
+  }).toString();
+
+  const { data, isLoading } = useGetProductsQuery(queryParams);
+
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -54,7 +64,7 @@ const AdminProductsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
             Products
@@ -63,13 +73,31 @@ const AdminProductsPage = () => {
             Manage your product inventory
           </p>
         </div>
-        <Link
-          to="/admin/products/new"
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-        >
-          <Plus size={20} />
-          Add Product
-        </Link>
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+          <Link
+            to="/admin/products/new"
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">Add Product</span>
+            <span className="sm:hidden">Add</span>
+          </Link>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden">
@@ -166,7 +194,9 @@ const AdminProductsPage = () => {
                     colSpan={5}
                     className="p-8 text-center text-gray-500 dark:text-gray-400"
                   >
-                    No products found. Start by adding one!
+                    {searchTerm
+                      ? 'No products found matching your search.'
+                      : 'No products found. Start by adding one!'}
                   </td>
                 </tr>
               )}
