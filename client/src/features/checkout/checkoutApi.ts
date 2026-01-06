@@ -74,6 +74,25 @@ export const checkoutApi = api.injectEndpoints({
       transformResponse: (response: { data: { order: any } }) => undefined,
       invalidatesTags: ['Cart', 'Orders'],
     }),
+    getShippingRates: builder.mutation<
+      any[],
+      {
+        pickup_pincode: number;
+        delivery_pincode: number;
+        weight: number;
+        length?: number;
+        breadth?: number;
+        height?: number;
+        cod?: boolean;
+      }
+    >({
+      query: (body) => ({
+        url: '/shipping/rates',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: { data: any[] }) => response.data,
+    }),
   }),
 });
 
@@ -82,4 +101,5 @@ export const {
   useAddAddressMutation,
   useCreateOrderMutation,
   useVerifyPaymentMutation,
+  useGetShippingRatesMutation,
 } = checkoutApi;

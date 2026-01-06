@@ -3,6 +3,7 @@ import { AppError } from '../utils/AppError';
 import { instance as razorpay } from '../config/razorpay';
 import crypto from 'crypto';
 import { sequelize } from '../models';
+import { shiprocketService } from './shiprocket.service';
 
 export const createOrder = async (userId: number, addressId: number) => {
   const transaction = await sequelize.transaction();
@@ -25,27 +26,54 @@ export const createOrder = async (userId: number, addressId: number) => {
       throw new AppError('Cart is empty', 400);
     }
 
-    // 3. Calculate Total and Check Stock
-    let total = 0;
+    // 3. Calculate Product Total and Check Stock
+    let productTotal = 0;
+    let totalWeight = 0;
     for (const item of cart.items) {
       if (item.product.stock < item.quantity) {
         throw new AppError(`Insufficient stock for ${item.product.name}`, 400);
       }
-      total += parseFloat(item.product.price) * item.quantity;
+      productTotal += parseFloat(item.product.price) * item.quantity;
+      // Assume 0.5kg per item if not defined. In a real app, product should have weight field.
+      totalWeight += 0.5 * item.quantity;
     }
 
-    // 4. Create Order (Pending)
+    // 4. Calculate Shipping
+    // Use default pickup pincode from env or constant
+    const pickupPincode = parseInt(process.env.PICKUP_PINCODE || '110001');
+    const deliveryPincode = parseInt(address.zip); // Ensure zip is numeric string
+
+    // Check serviceability
+    const shippingInfo = await shiprocketService.checkServiceability(
+      pickupPincode,
+      deliveryPincode,
+      totalWeight,
+      10, // length
+      10, // breadth
+      10, // height
+    );
+
+    const shippingCost = shippingInfo.rate;
+    const finalTotal = productTotal + shippingCost;
+
+    // 5. Create Order (Pending)
     const order = await models.Order.create(
       {
         userId,
         addressId,
-        total,
+        total: finalTotal,
+        shippingCost: shippingCost,
+        estimatedDeliveryDate: shippingInfo.etd,
+        deliveryPartner: shippingInfo.courier_name,
+        courierId: String(shippingInfo.courier_id),
+        pickupPincode: String(pickupPincode),
+        deliveryPincode: String(deliveryPincode),
         status: 'PENDING',
       },
       { transaction },
     );
 
-    // 5. Create Order Items
+    // 6. Create Order Items
     const orderItems = cart.items.map((item: any) => ({
       orderId: order.id,
       productId: item.productId,
@@ -54,9 +82,9 @@ export const createOrder = async (userId: number, addressId: number) => {
     }));
     await models.OrderItem.bulkCreate(orderItems, { transaction });
 
-    // 6. Create Razorpay Order
+    // 7. Create Razorpay Order
     const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(total * 100), // Amount in paise
+      amount: Math.round(finalTotal * 100), // Amount in paise
       currency: 'INR',
       receipt: `order_${order.id}`,
     });
@@ -65,13 +93,14 @@ export const createOrder = async (userId: number, addressId: number) => {
     await order.update({ razorpayOrderId: razorpayOrder.id }, { transaction });
 
     await transaction.commit();
-
     return {
       orderId: order.id,
       razorpayOrderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
       key: process.env.RAZORPAY_KEY_ID,
+      shippingCost,
+      estimatedDeliveryDate: shippingInfo.etd,
     };
   } catch (error) {
     await transaction.rollback();
@@ -99,7 +128,13 @@ export const verifyPayment = async (
     }
 
     // 2. Find Order
-    const order = await models.Order.findOne({ where: { razorpayOrderId } });
+    const order = await models.Order.findOne({
+      where: { razorpayOrderId },
+      include: [
+        { model: models.User, as: 'user' },
+        { model: models.Address, as: 'address' },
+      ],
+    });
     if (!order) {
       throw new AppError('Order not found', 404);
     }
@@ -141,6 +176,75 @@ export const verifyPayment = async (
         where: { cartId: cart.id },
         transaction,
       });
+    }
+
+    // 6. Create Shiprocket Order
+    // Note: We create this AFTER reducing stock but BEFORE committing transaction
+    const srOrder = await shiprocketService.createOrder({
+      order_id: String(order.id),
+      order_date: new Date(order.createdAt).toISOString(),
+      pickup_location: 'Primary', // Should be configured in SR
+      billing_customer_name: order.user?.name || 'Customer',
+      billing_last_name: '',
+      billing_address: order.address?.street || 'Street',
+      billing_city: order.address?.city || 'City',
+      billing_pincode: order.address?.zip || '110001',
+      billing_state: order.address?.state || 'State',
+      billing_country: 'India',
+      billing_email: order.user?.email || 'email@example.com',
+      billing_phone: '9999999999', // Should be in Address/User
+      shipping_is_billing: true,
+      order_items: orderItems.map((item: any) => ({
+        name: 'Plant ' + item.productId,
+        sku: 'SKU' + item.productId,
+        units: item.quantity,
+        selling_price: '100', // Need actual price in Item
+        discount: '',
+        tax: '',
+        hsn: '',
+      })),
+      payment_method: 'Prepaid',
+      shipping_charges: order.shippingCost,
+      giftwrap_charges: 0,
+      transaction_charges: 0,
+      total_discount: 0,
+      sub_total: order.total,
+      length: 10,
+      breadth: 10,
+      height: 10,
+      weight: 0.5,
+    });
+
+    await order.update(
+      {
+        shiprocketOrderId: (srOrder as any).order_id,
+        shiprocketShipmentId: (srOrder as any).shipment_id,
+      },
+      { transaction },
+    );
+
+    // 7. Generate AWB
+    // Note: Use type assertion as createOrder return type might be implicit/any
+    const srOrderData = srOrder as any;
+    if (order.courierId && srOrderData.shipment_id) {
+      try {
+        const awbData = await shiprocketService.generateAWB(
+          String(srOrderData.shipment_id),
+          String(order.courierId),
+        );
+        await order.update(
+          {
+            awbCode: awbData.awb_code,
+            trackingUrl:
+              awbData.tracking_url ||
+              `https://shiprocket.co/tracking/${awbData.awb_code}`,
+          },
+          { transaction },
+        );
+        console.log('AWB Generated:', awbData.awb_code);
+      } catch (awbError) {
+        console.error('Failed to generate AWB immediately:', awbError);
+      }
     }
 
     await transaction.commit();

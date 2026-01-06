@@ -8,8 +8,22 @@ class Order extends Model {
   public status!: 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   public razorpayOrderId!: string | null;
   public razorpayPaymentId!: string | null;
+  public shippingCost!: number;
+  public estimatedDeliveryDate!: Date | null;
+  public deliveryPartner!: string | null;
+  public shiprocketOrderId!: string | null;
+  public shiprocketShipmentId!: string | null;
+  public awbCode!: string | null;
+  public trackingUrl!: string | null;
+  public courierId!: string | null;
+  public pickupPincode!: string | null;
+  public deliveryPincode!: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  // Associations
+  public readonly user?: any; // Avoiding circular dependency for now or import User type
+  public readonly address?: any;
 
   static initModel(sequelize: Sequelize) {
     Order.init(
@@ -46,6 +60,47 @@ class Order extends Model {
           allowNull: true,
         },
         razorpayPaymentId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        shippingCost: {
+          type: DataTypes.DECIMAL(10, 2),
+          allowNull: false,
+          defaultValue: 0.0,
+        },
+        estimatedDeliveryDate: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+        deliveryPartner: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        shiprocketOrderId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        shiprocketShipmentId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        awbCode: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        trackingUrl: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        courierId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        pickupPincode: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        deliveryPincode: {
           type: DataTypes.STRING,
           allowNull: true,
         },

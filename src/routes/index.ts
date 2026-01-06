@@ -7,6 +7,8 @@ import addressRoutes from './address.routes';
 import orderRoutes from './order.routes';
 import userRoutes from './user.routes';
 import analyticsRoutes from './analytics.routes';
+import deliveryRoutes from './delivery.routes';
+import shippingRoutes from './shipping.routes';
 
 const router = Router();
 
@@ -22,5 +24,7 @@ router.use('/addresses', addressRoutes);
 router.use('/orders', orderRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/users', userRoutes);
+router.use('/delivery', deliveryRoutes);
+router.use('/shipping', shippingRoutes);
 
 export default router;
