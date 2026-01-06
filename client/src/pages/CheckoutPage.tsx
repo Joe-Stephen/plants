@@ -39,6 +39,9 @@ const CheckoutPage = () => {
     country: 'India',
   });
   const [shippingRates, setShippingRates] = useState<any[]>([]);
+  const [selectedCourierId, setSelectedCourierId] = useState<string | null>(
+    null,
+  );
   const [shippingCost, setShippingCost] = useState<number>(0);
   const [rateError, setRateError] = useState<string | null>(null);
 
@@ -73,10 +76,13 @@ const CheckoutPage = () => {
             }).unwrap();
             setShippingRates(rates);
             if (rates.length > 0) {
-              setShippingCost(rates[0].rate); // Default to cheapest/first
+              const best = rates[0];
+              setSelectedCourierId(best.courier_company_id || 'MOCK_ID');
+              setShippingCost(best.rate);
             } else {
               setRateError('No delivery options available for this pincode.');
               setShippingCost(0);
+              setSelectedCourierId(null);
             }
           } catch (err) {
             console.error('Failed to fetch rates', err);
@@ -117,6 +123,7 @@ const CheckoutPage = () => {
     try {
       const orderData = await createOrder({
         addressId: selectedAddressId,
+        courierId: selectedCourierId || undefined,
       }).unwrap();
 
       const options = {
@@ -291,6 +298,46 @@ const CheckoutPage = () => {
             <span>Subtotal</span>
             <span>₹{total.toFixed(2)}</span>
           </div>
+
+          {/* Shipping Options Selection */}
+          {shippingRates.length > 0 && (
+            <div className="mb-4">
+              <h4 className="font-semibold mb-2 text-sm text-gray-700">
+                Shipping Options
+              </h4>
+              <div className="space-y-2">
+                {shippingRates.map((rate) => (
+                  <label
+                    key={rate.courier_company_id || Math.random()}
+                    className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer ${selectedCourierId === rate.courier_company_id ? 'border-primary-600 bg-primary-50' : 'border-gray-200'}`}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="shipping"
+                        className="mr-3 text-primary-600 focus:ring-primary-500"
+                        checked={selectedCourierId === rate.courier_company_id}
+                        onChange={() => {
+                          setSelectedCourierId(rate.courier_company_id);
+                          setShippingCost(rate.rate);
+                        }}
+                      />
+                      <div>
+                        <div className="font-medium text-sm">
+                          {rate.courier_name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Est: {new Date(rate.etd).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="font-semibold text-sm">₹{rate.rate}</div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-between mb-4 text-sm">
             <span>Shipping {isLoadingRates && '(Calculating...)'}</span>
             <span>{shippingCost > 0 ? `₹${shippingCost}` : 'Pending'}</span>

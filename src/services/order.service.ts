@@ -5,7 +5,11 @@ import crypto from 'crypto';
 import { sequelize } from '../models';
 import { shiprocketService } from './shiprocket.service';
 
-export const createOrder = async (userId: number, addressId: number) => {
+export const createOrder = async (
+  userId: number,
+  addressId: number,
+  selectedCourierId?: string,
+) => {
   const transaction = await sequelize.transaction();
   try {
     // 1. Validate Address
@@ -44,16 +48,35 @@ export const createOrder = async (userId: number, addressId: number) => {
     const deliveryPincode = parseInt(address.zip); // Ensure zip is numeric string
 
     // Check serviceability
-    const shippingInfo = await shiprocketService.checkServiceability(
+    // Check serviceability (Get all options)
+    const couriers = await shiprocketService.fetchServiceabilityRaw(
       pickupPincode,
       deliveryPincode,
       totalWeight,
       10, // length
       10, // breadth
       10, // height
+      false, // cod
     );
 
-    const shippingCost = shippingInfo.rate;
+    let selectedCourier: any = null;
+
+    if (selectedCourierId) {
+      // Find the user's selected courier
+      selectedCourier = couriers.find(
+        (c: any) => String(c.courier_company_id) === String(selectedCourierId),
+      );
+      if (!selectedCourier) {
+        throw new AppError('Selected courier is no longer available', 400);
+      }
+    } else {
+      // Fallback to Cheapest (Default)
+      selectedCourier = couriers.reduce((prev: any, curr: any) => {
+        return prev.rate < curr.rate ? prev : curr;
+      });
+    }
+
+    const shippingCost = parseFloat(selectedCourier.rate);
     const finalTotal = productTotal + shippingCost;
 
     // 5. Create Order (Pending)
@@ -63,9 +86,9 @@ export const createOrder = async (userId: number, addressId: number) => {
         addressId,
         total: finalTotal,
         shippingCost: shippingCost,
-        estimatedDeliveryDate: shippingInfo.etd,
-        deliveryPartner: shippingInfo.courier_name,
-        courierId: String(shippingInfo.courier_id),
+        estimatedDeliveryDate: selectedCourier.etd,
+        deliveryPartner: selectedCourier.courier_name,
+        courierId: String(selectedCourier.courier_company_id),
         pickupPincode: String(pickupPincode),
         deliveryPincode: String(deliveryPincode),
         status: 'PENDING',
@@ -100,7 +123,7 @@ export const createOrder = async (userId: number, addressId: number) => {
       currency: razorpayOrder.currency,
       key: process.env.RAZORPAY_KEY_ID,
       shippingCost,
-      estimatedDeliveryDate: shippingInfo.etd,
+      estimatedDeliveryDate: selectedCourier.etd,
     };
   } catch (error) {
     await transaction.rollback();

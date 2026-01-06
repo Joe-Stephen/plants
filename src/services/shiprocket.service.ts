@@ -7,8 +7,8 @@ class ShiprocketService {
 
   private cache = new Map<string, { data: any; expiresAt: number }>();
 
-  // Private helper to fetch raw serviceability data
-  private async fetchServiceabilityRaw(
+  // Public helper to fetch raw serviceability data
+  public async fetchServiceabilityRaw(
     pickupPincode: number,
     deliveryPincode: number,
     weight: number,
@@ -32,6 +32,7 @@ class ShiprocketService {
       const mockCouriers = [
         {
           courier_name: 'Mock Courier Standard',
+          courier_company_id: 1,
           rate: 50,
           etd: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
           rating: 4.5,
@@ -39,6 +40,7 @@ class ShiprocketService {
         },
         {
           courier_name: 'Mock Courier Express',
+          courier_company_id: 2,
           rate: 100,
           etd: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
           rating: 4.8,
@@ -124,6 +126,7 @@ class ShiprocketService {
     // Map and Sort
     const mapped = couriers.map((c: any) => ({
       courier_name: c.courier_name,
+      courier_company_id: c.courier_company_id,
       rate: c.rate,
       etd: c.etd,
       rating: c.rating || 0,

@@ -45,7 +45,7 @@ export const checkoutApi = api.injectEndpoints({
         currency: string;
         key: string;
       },
-      { addressId: number }
+      { addressId: number; courierId?: string }
     >({
       query: (body) => ({
         url: '/orders',
