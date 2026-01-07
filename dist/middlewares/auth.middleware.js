@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authenticate = void 0;
+exports.restrictTo = exports.authorizeRole = exports.authenticate = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const AppError_1 = require("../utils/AppError");
 const models_1 = __importDefault(require("../models"));
@@ -30,4 +30,14 @@ const authenticate = async (req, _res, next) => {
     }
 };
 exports.authenticate = authenticate;
+const authorizeRole = (...roles) => {
+    return (req, _res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            return next(new AppError_1.AppError('You do not have permission to perform this action', 403));
+        }
+        next();
+    };
+};
+exports.authorizeRole = authorizeRole;
+exports.restrictTo = exports.authorizeRole;
 //# sourceMappingURL=auth.middleware.js.map

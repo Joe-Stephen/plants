@@ -8,6 +8,6 @@ const app_1 = __importDefault(require("./app"));
 dotenv_1.default.config();
 const PORT = process.env.PORT || 3000;
 app_1.default.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT} (v3)`);
 });
 //# sourceMappingURL=server.js.map

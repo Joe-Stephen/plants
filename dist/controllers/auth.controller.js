@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.signup = void 0;
+exports.getMe = exports.login = exports.signup = void 0;
 const authService = __importStar(require("../services/auth.service"));
 const signup = async (req, res, next) => {
     try {
@@ -63,4 +63,17 @@ const login = async (req, res, next) => {
     }
 };
 exports.login = login;
+const getMe = async (req, res, next) => {
+    try {
+        const user = req.user;
+        res.status(200).json({
+            status: 'success',
+            data: { user },
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getMe = getMe;
 //# sourceMappingURL=auth.controller.js.map

@@ -71,7 +71,7 @@ export const checkoutApi = api.injectEndpoints({
         method: 'POST',
         body,
       }),
-      transformResponse: (response: { data: { order: any } }) => undefined,
+      transformResponse: (_response: { data: { order: any } }) => undefined,
       invalidatesTags: ['Cart', 'Orders'],
     }),
     getShippingRates: builder.mutation<

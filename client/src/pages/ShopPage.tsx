@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { usePaginationParams } from '../hooks/usePaginationParams';
 import { useGetProductsQuery } from '../features/products/productApi';
 import ProductCard from '../components/ProductCard';

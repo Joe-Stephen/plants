@@ -10,13 +10,15 @@ const models_1 = __importDefault(require("../models"));
 const AppError_1 = require("../utils/AppError");
 const signToken = (id) => {
     return jsonwebtoken_1.default.sign({ id }, (process.env.JWT_SECRET || 'secret'), {
-        expiresIn: (process.env.JWT_EXPIRES_IN || '1d'),
+        expiresIn: (process.env.JWT_EXPIRES_IN ||
+            '1d'),
     });
 };
 const signup = async (data) => {
     const existingUser = await models_1.default.User.findOne({
         where: { email: data.email },
     });
+    console.log('existingUser :', existingUser);
     if (existingUser) {
         throw new AppError_1.AppError('Email already in use', 400);
     }

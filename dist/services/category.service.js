@@ -6,12 +6,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.getCategoryById = exports.getAllCategories = void 0;
 const models_1 = __importDefault(require("../models"));
 const AppError_1 = require("../utils/AppError");
-const getAllCategories = async () => {
-    return await models_1.default.Category.findAll({ include: [{ model: models_1.default.Category, as: 'children' }] });
+const pagination_1 = require("../utils/pagination");
+const getAllCategories = async (query = {}) => {
+    const { page, limit, offset } = (0, pagination_1.getPagination)(query);
+    const { count, rows } = await models_1.default.Category.findAndCountAll({
+        limit,
+        offset,
+        include: [{ model: models_1.default.Category, as: 'children' }],
+        distinct: true,
+    });
+    const result = (0, pagination_1.getPagingData)(rows, count, page, limit);
+    return {
+        categories: result.data,
+        metadata: result.metadata,
+    };
 };
 exports.getAllCategories = getAllCategories;
 const getCategoryById = async (id) => {
-    const category = await models_1.default.Category.findByPk(id, { include: [{ model: models_1.default.Category, as: 'children' }] });
+    const category = await models_1.default.Category.findByPk(id, {
+        include: [{ model: models_1.default.Category, as: 'children' }],
+    });
     if (!category) {
         throw new AppError_1.AppError('Category not found', 404);
     }
@@ -19,7 +33,10 @@ const getCategoryById = async (id) => {
 };
 exports.getCategoryById = getCategoryById;
 const createCategory = async (data) => {
-    const slug = data.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    const slug = data.name
+        .toLowerCase()
+        .replace(/ /g, '-')
+        .replace(/[^\w-]+/g, '');
     const existing = await models_1.default.Category.findOne({ where: { slug } });
     if (existing) {
         throw new AppError_1.AppError('Category with this name already exists', 400);
@@ -33,7 +50,10 @@ const updateCategory = async (id, data) => {
         throw new AppError_1.AppError('Category not found', 404);
     }
     if (data.name) {
-        data.slug = data.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        data.slug = data.name
+            .toLowerCase()
+            .replace(/ /g, '-')
+            .replace(/[^\w-]+/g, '');
     }
     return await category.update(data);
 };

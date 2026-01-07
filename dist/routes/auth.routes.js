@@ -37,8 +37,11 @@ const express_1 = require("express");
 const authController = __importStar(require("../controllers/auth.controller"));
 const validate_middleware_1 = require("../middlewares/validate.middleware");
 const auth_schema_1 = require("../schemas/auth.schema");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
 const router = (0, express_1.Router)();
+const rateLimiter_1 = require("../middlewares/rateLimiter");
 router.post('/signup', (0, validate_middleware_1.validate)(auth_schema_1.signupSchema), authController.signup);
-router.post('/login', (0, validate_middleware_1.validate)(auth_schema_1.loginSchema), authController.login);
+router.post('/login', rateLimiter_1.authLimiter, (0, validate_middleware_1.validate)(auth_schema_1.loginSchema), authController.login);
+router.get('/me', auth_middleware_1.authenticate, authController.getMe);
 exports.default = router;
 //# sourceMappingURL=auth.routes.js.map

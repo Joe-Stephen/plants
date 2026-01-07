@@ -39,8 +39,8 @@ const create = async (req, res, next) => {
     try {
         if (!req.user)
             return;
-        const { addressId } = req.body;
-        const data = await orderService.createOrder(req.user.id, addressId);
+        const { addressId, courierId } = req.body;
+        const data = await orderService.createOrder(req.user.id, addressId, courierId);
         res.status(201).json({ status: 'success', data });
     }
     catch (error) {

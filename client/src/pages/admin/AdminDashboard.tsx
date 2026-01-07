@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import LowStockAlert from '../../components/dashboard/LowStockAlert';
-import { useGetAllOrdersQuery } from '../../features/orders/orderApi';
 import {
   useGetSalesChartQuery,
   useGetOrdersByStatusQuery,
@@ -9,18 +7,18 @@ import {
   useGetCategorySalesQuery,
   useGetDashboardStatsQuery,
 } from '../../features/analytics/analyticsApi';
+import { useGetAllOrdersQuery } from '../../features/orders/orderApi';
 import { exportToCSV } from '../../utils/exportUtils';
+import LowStockAlert from '../../components/dashboard/LowStockAlert';
 import {
-  Loader2,
   DollarSign,
   ShoppingBag,
-  Clock,
-  TrendingUp,
   Calendar,
   Download,
   RefreshCw,
   Users,
   Package,
+  Loader2,
 } from 'lucide-react';
 import {
   RevenueChart,
@@ -90,7 +88,7 @@ const AdminDashboard = () => {
     pollingInterval,
   };
 
-  const { data: ordersData, isLoading: isLoadingOrders } = useGetAllOrdersQuery(
+  const { isLoading: isLoadingOrders } = useGetAllOrdersQuery(
     { page: 1 },
     refetchOptions,
   );

@@ -6,6 +6,7 @@ class OrderItem extends Model {
   public productId!: number | null;
   public quantity!: number;
   public price!: number;
+  public readonly product?: import('./Product').default;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 

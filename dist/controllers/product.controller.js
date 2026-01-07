@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.remove = exports.update = exports.create = exports.getById = exports.getAll = void 0;
+exports.deleteImage = exports.remove = exports.update = exports.create = exports.getById = exports.getAll = void 0;
 const productService = __importStar(require("../services/product.service"));
 const getAll = async (req, res, next) => {
     try {
@@ -67,7 +67,7 @@ const create = async (req, res, next) => {
 exports.create = create;
 const update = async (req, res, next) => {
     try {
-        const product = await productService.updateProduct(Number(req.params.id), req.body);
+        const product = await productService.updateProduct(Number(req.params.id), req.body, req.files);
         res.status(200).json({ status: 'success', data: { product } });
     }
     catch (error) {
@@ -85,4 +85,14 @@ const remove = async (req, res, next) => {
     }
 };
 exports.remove = remove;
+const deleteImage = async (req, res, next) => {
+    try {
+        await productService.deleteProductImage(Number(req.params.id));
+        res.status(204).send();
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.deleteImage = deleteImage;
 //# sourceMappingURL=product.controller.js.map

@@ -81,7 +81,7 @@ export default async function getCroppedImg(
   ctx.putImageData(data, 0, 0);
 
   // As a Blob
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     // Check if resize is needed (max 800x800)
     let finalCanvas = canvas;
     const maxSize = 800;

@@ -158,7 +158,7 @@ const ProductForm = () => {
   }
 
   const isSaving = isCreating || isUpdating;
-  const categories = categoriesData?.data?.categories || [];
+  const categories = (categoriesData as any)?.data?.categories || [];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-10">
@@ -377,7 +377,7 @@ const ProductForm = () => {
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select Category</option>
-                {categories.map((cat) => (
+                {categories.map((cat: any) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>

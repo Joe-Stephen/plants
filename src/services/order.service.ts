@@ -170,17 +170,18 @@ export const verifyPayment = async (
     // 3. Update Order Status
     await order.update({ status: 'PAID', razorpayPaymentId }, { transaction });
 
-    // 4. Deduct Stock
-    // We need to fetch items again or assume they matched (better to fetch from DB to be safe)
+    // 4. Deduct Stock and Prepare Shiprocket Items
     const orderItems = await models.OrderItem.findAll({
       where: { orderId: order.id },
+      include: [{ model: models.Product, as: 'product' }],
     });
+
+    const shiprocketItems = [];
 
     for (const item of orderItems) {
       if (!item.productId) continue;
-      const product = await models.Product.findByPk(item.productId, {
-        transaction,
-      });
+      const product = item.product; // Already included
+
       if (product) {
         if (product.stock < item.quantity) {
           throw new AppError(
@@ -189,10 +190,20 @@ export const verifyPayment = async (
           );
         }
         await product.decrement('stock', { by: item.quantity, transaction });
+
+        shiprocketItems.push({
+          name: product.name,
+          sku: String(product.id),
+          units: item.quantity,
+          selling_price: item.price, // OrderItem has the snapshot price
+          discount: '',
+          tax: '',
+          hsn: '',
+        });
       }
     }
 
-    // 5. Clear User Cart
+    // 5. Clear User Cart (Moved after stock check to be safe)
     const cart = await models.Cart.findOne({ where: { userId } });
     if (cart) {
       await models.CartItem.destroy({
@@ -202,30 +213,38 @@ export const verifyPayment = async (
     }
 
     // 6. Create Shiprocket Order
-    // Note: We create this AFTER reducing stock but BEFORE committing transaction
+    const nameParts = (order.user?.name || 'Customer').trim().split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ') || '.'; // Shiprocket requires non-empty last name often
+
+    // Fetch available pickup locations
+    const pickupLocationsResponse =
+      await shiprocketService.getPickupLocations();
+
+    const pickupLocations = (pickupLocationsResponse as any).data
+      ?.shipping_address;
+
+    if (!pickupLocations || pickupLocations.length === 0) {
+      throw new AppError('No pickup locations configured in Shiprocket', 500);
+    }
+
+    const pickupLocation = pickupLocations[0].pickup_location;
+
     const srOrder = await shiprocketService.createOrder({
       order_id: String(order.id),
       order_date: new Date(order.createdAt).toISOString(),
-      pickup_location: 'Primary', // Should be configured in SR
-      billing_customer_name: order.user?.name || 'Customer',
-      billing_last_name: '',
+      pickup_location: pickupLocation,
+      billing_customer_name: firstName,
+      billing_last_name: lastName,
       billing_address: order.address?.street || 'Street',
       billing_city: order.address?.city || 'City',
       billing_pincode: order.address?.zip || '110001',
       billing_state: order.address?.state || 'State',
       billing_country: 'India',
       billing_email: order.user?.email || 'email@example.com',
-      billing_phone: '9999999999', // Should be in Address/User
+      billing_phone: '9876543210', // TODO: Add phone to User/Address model
       shipping_is_billing: true,
-      order_items: orderItems.map((item: any) => ({
-        name: 'Plant ' + item.productId,
-        sku: 'SKU' + item.productId,
-        units: item.quantity,
-        selling_price: '100', // Need actual price in Item
-        discount: '',
-        tax: '',
-        hsn: '',
-      })),
+      order_items: shiprocketItems,
       payment_method: 'Prepaid',
       shipping_charges: order.shippingCost,
       giftwrap_charges: 0,

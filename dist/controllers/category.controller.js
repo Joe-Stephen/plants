@@ -35,10 +35,10 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.remove = exports.update = exports.create = exports.getById = exports.getAll = void 0;
 const categoryService = __importStar(require("../services/category.service"));
-const getAll = async (_req, res, next) => {
+const getAll = async (req, res, next) => {
     try {
-        const categories = await categoryService.getAllCategories();
-        res.status(200).json({ status: 'success', data: { categories } });
+        const { categories, metadata } = await categoryService.getAllCategories(req.query);
+        res.status(200).json({ status: 'success', data: { categories, metadata } });
     }
     catch (error) {
         next(error);

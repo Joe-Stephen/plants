@@ -10,18 +10,26 @@ let token = '';
 let addressId = 0;
 let razorpayOrderId = '';
 let razorpayPaymentId = 'pay_' + Date.now();
-const RAZORPAY_SECRET = 'test_secret';
+const RAZORPAY_SECRET = '2mQ3bTgnaNMZFSRSx4GfATHG';
 const login = async () => {
     try {
+        const email = `test_order_${Date.now()}@example.com`;
+        const password = 'password123';
+        await axios_1.default.post(`${API_URL}/auth/signup`, {
+            name: 'Test Order User',
+            email,
+            password,
+        });
+        console.log('Registered new user:', email);
         const res = await axios_1.default.post(`${API_URL}/auth/login`, {
-            email: 'user@example.com',
-            password: 'password123'
+            email,
+            password,
         });
         token = res.data.token;
         console.log('Login: Success');
     }
     catch (error) {
-        console.error('Login Failed:', error.response?.data || error.message);
+        console.error('Login/Signup Failed:', error.response?.data || error.message);
         process.exit(1);
     }
 };
@@ -32,13 +40,13 @@ const setupCartAndAddress = async () => {
             city: 'Tropical City',
             state: 'FL',
             zip: '33333',
-            country: 'USA'
+            country: 'USA',
         }, { headers: { Authorization: `Bearer ${token}` } });
         addressId = resAddr.data.data.address.id;
         console.log('Address Created:', addressId);
         await axios_1.default.post(`${API_URL}/cart`, {
-            productId: 1,
-            quantity: 1
+            productId: 7,
+            quantity: 1,
         }, { headers: { Authorization: `Bearer ${token}` } });
         console.log('Cart Item Added');
     }
@@ -50,14 +58,16 @@ const createOrder = async () => {
     try {
         console.log('Creating Order...');
         const res = await axios_1.default.post(`${API_URL}/orders`, {
-            addressId
+            addressId,
         }, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
         });
         const data = res.data.data;
         razorpayOrderId = data.razorpayOrderId;
         console.log('Order Created. Razorpay Order ID:', razorpayOrderId);
         console.log('Order Amount:', data.amount);
+        console.log('Shipping Cost:', data.shippingCost || 'N/A');
+        console.log('Estimated Delivery:', data.estimatedDeliveryDate || 'N/A');
     }
     catch (error) {
         console.error('Create Order Failed:', error.response?.data || error.message);
@@ -75,16 +85,20 @@ const verifyPayment = async () => {
         const res = await axios_1.default.post(`${API_URL}/orders/verify`, {
             razorpayOrderId,
             razorpayPaymentId,
-            signature
+            signature,
         }, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
         });
         const order = res.data.data.order;
         if (order.status === 'PAID') {
             console.log('Payment Verification: Success (Status: PAID)');
+            console.log('Shiprocket Order ID:', order.shiprocketOrderId);
+            console.log('Shipment ID:', order.shiprocketShipmentId);
+            console.log('AWB Code:', order.awbCode || 'Pending');
+            console.log('Tracking URL:', order.trackingUrl || 'Pending');
         }
         else {
-            console.error('Payment Verification: Failed (Status not PAID)', order.status);
+            console.log('Payment Verification: Failed (Status not PAID)', order.status);
         }
     }
     catch (error) {

@@ -26,6 +26,10 @@ class User extends sequelize_1.Model {
                 type: sequelize_1.DataTypes.ENUM('USER', 'ADMIN'),
                 defaultValue: 'USER',
             },
+            status: {
+                type: sequelize_1.DataTypes.ENUM('active', 'inactive'),
+                defaultValue: 'active',
+            },
         }, {
             sequelize,
             modelName: 'User',

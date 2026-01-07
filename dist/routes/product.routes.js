@@ -44,7 +44,8 @@ const router = (0, express_1.Router)();
 router.get('/', (0, validate_middleware_1.validate)(product_schema_1.queryProductSchema), productController.getAll);
 router.get('/:id', productController.getById);
 router.post('/', auth_middleware_1.authenticate, (0, role_middleware_1.authorizeRole)('ADMIN'), cloudinary_1.upload.array('images', 5), (0, validate_middleware_1.validate)(product_schema_1.createProductSchema), productController.create);
-router.put('/:id', auth_middleware_1.authenticate, (0, role_middleware_1.authorizeRole)('ADMIN'), (0, validate_middleware_1.validate)(product_schema_1.updateProductSchema), productController.update);
+router.put('/:id', auth_middleware_1.authenticate, (0, role_middleware_1.authorizeRole)('ADMIN'), cloudinary_1.upload.array('images', 5), (0, validate_middleware_1.validate)(product_schema_1.updateProductSchema), productController.update);
 router.delete('/:id', auth_middleware_1.authenticate, (0, role_middleware_1.authorizeRole)('ADMIN'), productController.remove);
+router.delete('/images/:id', auth_middleware_1.authenticate, (0, role_middleware_1.authorizeRole)('ADMIN'), productController.deleteImage);
 exports.default = router;
 //# sourceMappingURL=product.routes.js.map

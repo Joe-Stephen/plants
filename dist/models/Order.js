@@ -33,6 +33,47 @@ class Order extends sequelize_1.Model {
                 type: sequelize_1.DataTypes.STRING,
                 allowNull: true,
             },
+            shippingCost: {
+                type: sequelize_1.DataTypes.DECIMAL(10, 2),
+                allowNull: false,
+                defaultValue: 0.0,
+            },
+            estimatedDeliveryDate: {
+                type: sequelize_1.DataTypes.DATE,
+                allowNull: true,
+            },
+            deliveryPartner: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
+            },
+            shiprocketOrderId: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
+            },
+            shiprocketShipmentId: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
+            },
+            awbCode: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
+            },
+            trackingUrl: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
+            },
+            courierId: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
+            },
+            pickupPincode: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
+            },
+            deliveryPincode: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
+            },
         }, {
             sequelize,
             modelName: 'Order',

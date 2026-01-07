@@ -29,7 +29,33 @@ export const userApi = api.injectEndpoints({
       query: (id) => `/users/${id}`,
       transformResponse: (response: ApiResponse<{ user: User }>) =>
         response.data,
-      providesTags: (result, error, id) => [{ type: 'User', id }],
+      providesTags: (_result, _error, id) => [{ type: 'User', id }],
+    }),
+    createUser: builder.mutation<User, Partial<User>>({
+      query: (userData) => ({
+        url: '/users',
+        method: 'POST',
+        body: userData,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    updateUser: builder.mutation<User, { id: number; data: Partial<User> }>({
+      query: ({ id, data }) => ({
+        url: `/users/${id}`, // Assuming a general update endpoint, not just status
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'User', id },
+        'User',
+      ],
+    }),
+    deleteUser: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, id) => [{ type: 'User', id }, 'User'],
     }),
     updateUserRole: builder.mutation<
       { user: User },
@@ -40,7 +66,7 @@ export const userApi = api.injectEndpoints({
         method: 'PATCH',
         body: { role },
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_result, _error, { id }) => [
         { type: 'User', id },
         'User',
       ],
@@ -73,7 +99,7 @@ export const userApi = api.injectEndpoints({
         method: 'PATCH',
         body: { status },
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_result, _error, { id }) => [
         { type: 'User', id },
         'User',
       ],

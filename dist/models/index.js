@@ -14,6 +14,7 @@ const Cart_1 = __importDefault(require("./Cart"));
 const CartItem_1 = __importDefault(require("./CartItem"));
 const Order_1 = __importDefault(require("./Order"));
 const OrderItem_1 = __importDefault(require("./OrderItem"));
+const AnalyticsDailySummary_1 = __importDefault(require("./AnalyticsDailySummary"));
 const env = process.env.NODE_ENV || 'development';
 const config = require('../config/config')[env];
 const sequelize = config.url
@@ -30,6 +31,7 @@ const models = {
     CartItem: CartItem_1.default,
     Order: Order_1.default,
     OrderItem: OrderItem_1.default,
+    AnalyticsDailySummary: AnalyticsDailySummary_1.default,
 };
 Object.values(models).forEach((model) => {
     if (model.initModel) {
