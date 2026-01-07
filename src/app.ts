@@ -41,7 +41,7 @@ if (fs.existsSync(publicPath)) {
   app.use(express.static(publicPath));
 
   // Catch-all route to serve the SPA
-  app.get('*', (_req, res) => {
+  app.get(/(.*)/, (_req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
   });
 }

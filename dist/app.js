@@ -30,7 +30,7 @@ app.use('/api', routes_1.default);
 const publicPath = path_1.default.join(__dirname, 'public');
 if (fs_1.default.existsSync(publicPath)) {
     app.use(express_1.default.static(publicPath));
-    app.get('*', (_req, res) => {
+    app.get(/(.*)/, (_req, res) => {
         res.sendFile(path_1.default.join(publicPath, 'index.html'));
     });
 }
