@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', router);
 
 // Serve static files if they exist (Monolithic deployment)
-const publicPath = path.join(__dirname, '../public');
+const publicPath = path.join(__dirname, 'public');
 if (fs.existsSync(publicPath)) {
   app.use(express.static(publicPath));
 
