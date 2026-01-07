@@ -6,5 +6,7 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT} (v3)`);
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`- API: http://localhost:${PORT}/api`);
+  console.log(`- Frontend: http://localhost:${PORT}`);
 });
