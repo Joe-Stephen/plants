@@ -30,6 +30,9 @@
       "./node_modules/@types"
     ]
   },
+  "ts-node": {
+    "files": true
+  },
   "exclude": [
     "node_modules"
   ],
