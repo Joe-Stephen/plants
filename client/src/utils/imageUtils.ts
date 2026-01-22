@@ -83,7 +83,7 @@ export default async function getCroppedImg(
   ctx.putImageData(data, 0, 0);
 
   // As a Blob
-  return new Promise((resolve, _reject) => {
+  return new Promise((resolve, reject) => {
     // Check if resize is needed (max 800x800)
     let finalCanvas = canvas;
     const maxSize = 800;
@@ -101,8 +101,7 @@ export default async function getCroppedImg(
     finalCanvas.toBlob(
       (blob) => {
         if (!blob) {
-          //reject(new Error('Canvas is empty'));
-          console.error('Canvas is empty');
+          reject(new Error('Canvas is empty'));
           return;
         }
 
@@ -113,6 +112,6 @@ export default async function getCroppedImg(
       },
       'image/jpeg',
       0.9,
-    ); // 90% quality
+    );
   });
 }
