@@ -17,7 +17,7 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -42,6 +42,12 @@ if (fs.existsSync(publicPath)) {
   // Catch-all route to serve the SPA
   app.get(/(.*)/, (_req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
+  });
+} else {
+  app.get('/', (_req, res) => {
+    res.send(
+      'API is running successfully. <br> For frontend, please visit <a href="http://localhost:5173">http://localhost:5173</a>',
+    );
   });
 }
 app.use(errorHandler);

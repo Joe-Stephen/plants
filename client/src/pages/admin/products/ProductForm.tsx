@@ -158,7 +158,7 @@ const ProductForm = () => {
   }
 
   const isSaving = isCreating || isUpdating;
-  const categories = (categoriesData as any)?.data?.categories || [];
+  const categories = categoriesData?.categories || [];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-10">
