@@ -37,7 +37,7 @@ PORT=3000
 
 # Database
 DB_HOST=your-db-host
-DB_USER=your-db-user
+DB_USERNAME=your-db-user
 DB_PASSWORD=your-db-password
 DB_NAME=your-db-name
 
