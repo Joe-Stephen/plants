@@ -20,7 +20,7 @@ app.use((0, cors_1.default)({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -39,6 +39,11 @@ if (fs_1.default.existsSync(publicPath)) {
     app.use(express_1.default.static(publicPath));
     app.get(/(.*)/, (_req, res) => {
         res.sendFile(path_1.default.join(publicPath, 'index.html'));
+    });
+}
+else {
+    app.get('/', (_req, res) => {
+        res.send('API is running successfully. <br> For frontend, please visit <a href="http://localhost:5173">http://localhost:5173</a>');
     });
 }
 app.use(error_middleware_1.errorHandler);
