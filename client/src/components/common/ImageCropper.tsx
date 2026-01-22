@@ -77,7 +77,7 @@ const ImageCropper = ({
         </div>
 
         {/* Cropper Container */}
-        <div className="relative flex-1 min-h-[400px] bg-gray-900">
+        <div className="relative w-full h-[400px] bg-gray-900">
           <Cropper
             image={image}
             crop={crop}
