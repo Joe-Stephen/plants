@@ -80,14 +80,16 @@ class ShiprocketService {
         const token = await shiprocketAuth_service_1.shiprocketAuthService.getToken();
         if (token === 'MOCK_TOKEN') {
             return {
-                data: [
-                    {
-                        pickup_location: 'Primary',
-                        address: 'Mock Address',
-                        city: 'Mock City',
-                        pin_code: 110001,
-                    },
-                ],
+                data: {
+                    shipping_address: [
+                        {
+                            pickup_location: 'Primary',
+                            address: 'Mock Address',
+                            city: 'Mock City',
+                            pin_code: 110001,
+                        },
+                    ],
+                },
             };
         }
         try {
