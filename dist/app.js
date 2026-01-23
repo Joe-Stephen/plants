@@ -28,7 +28,17 @@ const limiter = (0, express_rate_limit_1.default)({
 app.use(limiter);
 app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            connectSrc: ["'self'", "https:"],
+            imgSrc: ["'self'", "data:", "blob:", "https:"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+        },
+    },
 }));
+;
 app.use((0, compression_1.default)());
 app.use('/api', rateLimiter_1.apiLimiter);
 app.use(express_1.default.json());
