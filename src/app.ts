@@ -37,7 +37,6 @@ app.use(
     },
   }),
 );
-);
 app.use(compression());
 // Apply rate limiting to API routes
 app.use('/api', apiLimiter);

@@ -38,7 +38,6 @@ app.use((0, helmet_1.default)({
         },
     },
 }));
-;
 app.use((0, compression_1.default)());
 app.use('/api', rateLimiter_1.apiLimiter);
 app.use(express_1.default.json());
