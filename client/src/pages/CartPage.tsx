@@ -67,7 +67,8 @@ const CartPage = () => {
           >
             <img
               src={
-                item.product.images.find((img) => img.is_primary)?.url ||
+                item.product.images?.find((img) => img.is_primary)?.url ||
+                item.product.images?.[0]?.url ||
                 'https://via.placeholder.com/100'
               }
               alt={item.product.name}

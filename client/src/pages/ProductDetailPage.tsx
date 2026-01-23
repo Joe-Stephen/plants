@@ -58,6 +58,13 @@ const ProductDetailPage = () => {
           },
         ];
 
+  // Sort images so primary comes first, if it exists
+  if (images.length > 0) {
+    images.sort((a, b) =>
+      a.is_primary === b.is_primary ? 0 : a.is_primary ? -1 : 1,
+    );
+  }
+
   const handleDecrement = () => setQuantity((q) => Math.max(1, q - 1));
   const handleIncrement = () =>
     setQuantity((q) => Math.min(product.stock, q + 1));
