@@ -60,3 +60,14 @@ Once the deployment finishes, Render will provide a URL (e.g., `https://plants-s
 
 - Visiting the root `/` should load your React application.
 - API requests will go to `/api/...`.
+
+## Step 5: Keep Service Active (Free Plan)
+
+To prevent the free instance from spinning down after 15 minutes of inactivity:
+
+1.  A GitHub Action has been added at `.github/workflows/keep-alive.yml`.
+2.  Go to your GitHub Repository -> **Settings** -> **Secrets and variables** -> **Actions**.
+3.  Click **New repository secret**.
+4.  Name: `RENDER_APP_URL`
+5.  Value: Your Render App URL (e.g., `https://plants-store.onrender.com`).
+6.  The workflow will ping your server every 14 minutes.
